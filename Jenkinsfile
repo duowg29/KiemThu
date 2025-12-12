@@ -10,7 +10,6 @@ pipeline {
                      credentialsId: '' // Để trống nếu repo public, hoặc thêm credentialsId nếu private
             }
         }
-        
         stage('Run Katalon Tests') {
             steps {
                 echo 'Running Katalon Studio tests...'

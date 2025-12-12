@@ -1,0 +1,360 @@
+================================================================================
+    HƯỚNG DẪN TÍCH HỢP CI/CD VỚI JENKINS CHO KATALON STUDIO
+    Dự án: KiemThu - Katalon Studio Project
+    Hệ điều hành: Windows
+================================================================================
+
+TỔNG QUAN QUY TRÌNH:
+--------------------
+1. Cài đặt Jenkins trên Windows
+2. Cấu hình Jenkins cơ bản
+3. Tạo Jenkinsfile cho project KiemThu
+4. Kết nối Jenkins với GitHub
+5. Chạy test tự động
+
+
+================================================================================
+BƯỚC 1: CÀI ĐẶT JENKINS TRÊN WINDOWS
+================================================================================
+
+1.1. Kiểm tra Java
+------------------
+- Jenkins cần Java 8 trở lên
+- Mở PowerShell, chạy: java -version
+- Nếu chưa có, tải Java JDK 11 hoặc 17 từ Oracle hoặc OpenJDK
+
+1.2. Tải Jenkins
+----------------
+1. Vào: https://www.jenkins.io/download/
+2. Chọn "Windows" → tải file .msi (Jenkins Windows Installer)
+3. Chạy file .msi đã tải
+4. Cài đặt:
+   - Chọn thư mục cài đặt (mặc định: C:\Program Files\Jenkins)
+   - Chọn "Run service as LocalSystem" hoặc tạo user riêng
+   - Port mặc định: 8080 (có thể đổi nếu bị trùng)
+   - Cài đặt xong, Jenkins sẽ tự khởi động
+
+1.3. Khởi động Jenkins lần đầu
+-------------------------------
+1. Mở trình duyệt, vào: http://localhost:8080
+2. Lấy mật khẩu ban đầu:
+   - Mở file: C:\Program Files\Jenkins\secrets\initialAdminPassword
+   - Copy mật khẩu và paste vào Jenkins
+3. Cài đặt plugins:
+   - Chọn "Install suggested plugins" (khuyến nghị)
+   - Hoặc "Select plugins to install" để chọn thủ công
+   - Cần: Git plugin, Pipeline, GitHub Integration
+4. Tạo Admin user:
+   - Điền Username, Password, Full name, Email
+   - Lưu thông tin đăng nhập
+5. Cấu hình URL:
+   - Giữ mặc định http://localhost:8080 hoặc đổi nếu cần
+   - Click "Save and Finish" → "Start using Jenkins"
+
+
+================================================================================
+BƯỚC 2: CẤU HÌNH JENKINS CƠ BẢN
+================================================================================
+
+2.1. Cài đặt Git (nếu chưa có)
+-------------------------------
+- Kiểm tra: mở PowerShell, chạy: git --version
+- Nếu chưa có, tải Git for Windows: https://git-scm.com/download/win
+
+2.2. Tìm đường dẫn Katalon Studio
+----------------------------------
+- Thường ở:
+  * C:\Program Files\Katalon\Katalon Studio\katalon.exe
+  * Hoặc C:\Users\[TênUser]\AppData\Local\Katalon\Katalon Studio\katalon.exe
+- Ghi lại đường dẫn này để dùng sau
+
+2.3. Cấu hình Git trong Jenkins
+--------------------------------
+1. Vào Jenkins → Manage Jenkins → Configure System
+2. Tìm "Git" → điền:
+   - Git executable: C:\Program Files\Git\bin\git.exe (hoặc đường dẫn Git của bạn)
+3. Save
+
+
+================================================================================
+BƯỚC 3: TẠO JENKINSFILE CHO PROJECT KIEMTHU
+================================================================================
+
+3.1. Tạo Jenkinsfile trong project KiemThu
+-------------------------------------------
+Tạo file Jenkinsfile (không có extension) ở thư mục gốc của project KiemThu 
+với nội dung:
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from GitHub...'
+                git branch: 'main', 
+                     url: 'https://github.com/ThienPhu41224/KiemThu.git',
+                     credentialsId: '' // Để trống nếu repo public, hoặc thêm credentialsId nếu private
+            }
+        }
+        
+        stage('Run Katalon Tests') {
+            steps {
+                echo 'Running Katalon Studio tests...'
+                bat '''
+                    "C:\\Program Files\\Katalon\\Katalon Studio\\katalon.exe" -runMode=console ^
+                    -projectPath="%WORKSPACE%" ^
+                    -retry=0 ^
+                    -testSuitePath="Test Suites/UI Testing" ^
+                    -executionProfile="default" ^
+                    -browserType="Chrome (headless)" ^
+                    -apiKey="" ^
+                    -g_username="" ^
+                    -g_password=""
+                '''
+            }
+        }
+        
+        stage('Archive Reports') {
+            steps {
+                echo 'Archiving test reports...'
+                archiveArtifacts artifacts: 'Reports/**/*', 
+                                fingerprint: true, 
+                                allowEmptyArchive: true
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Tests passed successfully!'
+        }
+        failure {
+            echo 'Tests failed!'
+        }
+    }
+}
+
+Lưu ý:
+- Thay đường dẫn katalon.exe bằng đường dẫn thực tế của bạn
+- Thay -testSuitePath theo test suite bạn muốn chạy
+- Nếu repo private, cần thêm credentialsId (xem bước 4.2)
+
+3.2. Commit và push Jenkinsfile lên GitHub
+-------------------------------------------
+1. Mở terminal trong thư mục project KiemThu
+2. Chạy:
+   git add Jenkinsfile
+   git commit -m "Add Jenkinsfile for CI/CD"
+   git push origin main
+
+
+================================================================================
+BƯỚC 4: KẾT NỐI JENKINS VỚI GITHUB
+================================================================================
+
+4.1. Tạo Personal Access Token (nếu repo private)
+---------------------------------------------------
+1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Generate new token (classic)
+3. Đặt tên, chọn scopes: repo (full control)
+4. Generate token → copy token (chỉ hiện 1 lần)
+
+4.2. Thêm Credentials vào Jenkins (nếu repo private)
+------------------------------------------------------
+1. Jenkins → Manage Jenkins → Manage Credentials
+2. Chọn domain (thường là "global")
+3. Add Credentials:
+   - Kind: "Username with password" hoặc "Secret text"
+   - Username: GitHub username
+   - Password: Personal Access Token
+   - ID: đặt tên (ví dụ: github-kiemthu)
+   - Description: mô tả
+4. Save
+
+4.3. Cấu hình GitHub Webhook (tự động trigger)
+-----------------------------------------------
+1. Vào repo GitHub KiemThu → Settings → Webhooks → Add webhook
+2. Payload URL: http://[IP-máy-bạn]:8080/github-webhook/
+   - Nếu Jenkins trên cùng máy: http://localhost:8080/github-webhook/
+   - Nếu máy khác: dùng IP máy chạy Jenkins
+3. Content type: application/json
+4. Events: chọn "Just the push event"
+5. Active: bật
+6. Add webhook
+
+Lưu ý: Nếu Jenkins ở localhost, GitHub không thể gọi webhook. Có thể:
+- Dùng ngrok để expose localhost
+- Hoặc chạy Jenkins trên server có IP public
+- Hoặc trigger thủ công trong Jenkins
+
+
+================================================================================
+BƯỚC 5: TẠO PIPELINE JOB TRONG JENKINS
+================================================================================
+
+5.1. Tạo Pipeline mới
+----------------------
+1. Jenkins → New Item
+2. Đặt tên (ví dụ: "KiemThu-CI-CD")
+3. Chọn "Pipeline" → OK
+
+5.2. Cấu hình Pipeline
+-----------------------
+1. Trong "Pipeline definition":
+   - Chọn "Pipeline script from SCM"
+   - SCM: chọn "Git"
+   - Repository URL: https://github.com/ThienPhu41224/KiemThu.git
+   - Credentials: chọn credentials đã tạo (nếu repo private), hoặc để trống nếu public
+   - Branch: */main
+   - Script Path: Jenkinsfile
+2. Build Triggers (tùy chọn):
+   - "GitHub hook trigger for GITScm polling" (nếu đã setup webhook)
+   - Hoặc "Poll SCM" với schedule: H/5 * * * * (check mỗi 5 phút)
+3. Save
+
+5.3. Chạy Pipeline lần đầu
+---------------------------
+1. Vào job vừa tạo → Build Now
+2. Xem console output để kiểm tra:
+   - Checkout code
+   - Chạy Katalon tests
+   - Archive reports
+3. Nếu lỗi, xem log để debug
+
+
+================================================================================
+BƯỚC 6: KIỂM TRA VÀ DEBUG
+================================================================================
+
+6.1. Kiểm tra kết quả
+---------------------
+1. Vào job → Build History → chọn build
+2. Console Output: xem log chi tiết
+3. Test Results: xem kết quả test (nếu có plugin)
+4. Workspace: xem files trong workspace
+
+6.2. Xử lý lỗi thường gặp
+-------------------------
+
+Lỗi: "katalon.exe not found"
+→ Giải pháp: kiểm tra đường dẫn trong Jenkinsfile
+
+Lỗi: "Git not found"
+→ Giải pháp: cấu hình Git path trong Jenkins
+
+Lỗi: "Permission denied"
+→ Giải pháp: chạy Jenkins với quyền admin hoặc cấp quyền cho thư mục
+
+Lỗi: "Headless browser failed"
+→ Giải pháp: thử -browserType="Chrome" thay vì headless
+
+Lỗi: "Webhook không hoạt động"
+→ Giải pháp: dùng Poll SCM hoặc trigger thủ công
+
+
+================================================================================
+BƯỚC 7: TỐI ƯU HÓA (TÙY CHỌN)
+================================================================================
+
+7.1. Chạy nhiều test suites
+----------------------------
+Chỉnh Jenkinsfile để chạy nhiều test suites:
+
+stage('Run Multiple Test Suites') {
+    steps {
+        script {
+            def testSuites = [
+                'Test Suites/UI Testing',
+                'Test Suites/Functional Testing'
+            ]
+            testSuites.each { suite ->
+                bat """
+                    "C:\\Program Files\\Katalon\\Katalon Studio\\katalon.exe" -runMode=console ^
+                    -projectPath="%WORKSPACE%" ^
+                    -testSuitePath="${suite}" ^
+                    -executionProfile="default" ^
+                    -browserType="Chrome (headless)"
+                """
+            }
+        }
+    }
+}
+
+7.2. Gửi email khi test fail
+-----------------------------
+1. Cài plugin "Email Extension"
+2. Thêm vào Jenkinsfile:
+
+post {
+    failure {
+        emailext (
+            subject: "Test Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+            body: "Test execution failed. Check console output for details.",
+            to: "your-email@example.com"
+        )
+    }
+}
+
+7.3. Hiển thị test results
+---------------------------
+1. Cài plugin "HTML Publisher" hoặc "Test Results Analyzer"
+2. Thêm vào Jenkinsfile để publish HTML reports
+
+
+================================================================================
+TÓM TẮT CHECKLIST
+================================================================================
+
+[ ] Cài đặt Java
+[ ] Cài đặt Jenkins
+[ ] Khởi động Jenkins và cài plugins
+[ ] Tạo Admin user
+[ ] Cài đặt Git
+[ ] Tìm đường dẫn Katalon Studio
+[ ] Tạo Jenkinsfile trong project KiemThu
+[ ] Push Jenkinsfile lên GitHub
+[ ] Tạo Personal Access Token (nếu repo private)
+[ ] Thêm Credentials vào Jenkins (nếu repo private)
+[ ] Tạo Pipeline job trong Jenkins
+[ ] Chạy thử Pipeline
+[ ] Kiểm tra kết quả và debug nếu cần
+
+
+================================================================================
+LƯU Ý QUAN TRỌNG
+================================================================================
+
+1. Đường dẫn Windows: dùng \\ hoặc / trong Jenkinsfile
+2. Quyền truy cập: Jenkins cần quyền đọc/ghi project
+3. Browser drivers: đảm bảo ChromeDriver/GeckoDriver có sẵn
+4. Test data: nếu dùng data files, đảm bảo chúng có trong repo
+
+
+================================================================================
+THÔNG TIN THAM KHẢO
+================================================================================
+
+- Jenkins Documentation: https://www.jenkins.io/doc/
+- Katalon Studio Command Line: https://docs.katalon.com/katalon-studio/docs/console-mode-execution.html
+- GitHub Webhooks: https://docs.github.com/en/developers/webhooks-and-events/webhooks
+- Jenkins Pipeline Syntax: https://www.jenkins.io/doc/book/pipeline/syntax/
+
+
+================================================================================
+KẾT LUẬN
+================================================================================
+
+Sau khi hoàn thành các bước trên, bạn sẽ có:
+- Jenkins chạy trên Windows
+- Pipeline tự động chạy test khi có code mới
+- Reports được lưu trữ trong Jenkins
+- CI/CD pipeline hoàn chỉnh cho project KiemThu
+
+Chúc bạn thành công!
+
+================================================================================
+
