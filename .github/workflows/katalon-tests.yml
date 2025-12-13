@@ -90,44 +90,30 @@ jobs:
         Write-Host "Command: $KATALON_HOME\katalon.exe -runMode=console -projectPath=`"$PWD`" -testSuitePath=`"$testSuitePath`" -executionProfile=`"default`" -browserType=`"Chrome (headless)`" -reportFolder=`"$PWD\Reports`""
         $startTime = Get-Date
         
-        # Chạy Katalon và đợi process hoàn thành
-        Write-Host "Executing Katalon with arguments..."
-        $arguments = @(
-          "-runMode=console",
-          "-projectPath=$PWD",
-          "-retry=0",
-          "-testSuitePath=$testSuitePath",
-          "-executionProfile=default",
-          "-browserType=Chrome (headless)",
-          "-apiKey=",
-          "-g_username=",
-          "-g_password=",
-          "-reportFolder=$PWD\Reports"
-        )
+        # Chạy Katalon trực tiếp với & operator (không dùng Start-Process để tránh treo)
+        Write-Host "Executing Katalon..."
+        Write-Host "This may take several minutes. Please wait..."
         
-        Write-Host "Arguments: $($arguments -join ' ')"
-        
-        # Chạy và đợi với timeout
-        $process = Start-Process -FilePath "$KATALON_HOME\katalon.exe" `
-          -ArgumentList $arguments `
-          -NoNewWindow -Wait -PassThru `
-          -RedirectStandardOutput "katalon-output.txt" `
-          -RedirectStandardError "katalon-error.txt"
-        
-        Write-Host "Process completed. Exit code: $($process.ExitCode)"
-        
-        # Đọc output
-        if (Test-Path "katalon-output.txt") {
-          Write-Host "=== Katalon Output ==="
-          Get-Content "katalon-output.txt" | ForEach-Object { Write-Host $_ }
+        try {
+          # Chạy Katalon và capture output
+          & "$KATALON_HOME\katalon.exe" -runMode=console `
+            -projectPath="$PWD" `
+            -retry=0 `
+            -testSuitePath="$testSuitePath" `
+            -executionProfile="default" `
+            -browserType="Chrome (headless)" `
+            -apiKey="" `
+            -g_username="" `
+            -g_password="" `
+            -reportFolder="$PWD\Reports" `
+            2>&1 | Tee-Object -FilePath "katalon-output.txt"
+          
+          $exitCode = $LASTEXITCODE
+        } catch {
+          Write-Host "Error executing Katalon: $($_.Exception.Message)"
+          $exitCode = 1
         }
         
-        if (Test-Path "katalon-error.txt") {
-          Write-Host "=== Katalon Errors ==="
-          Get-Content "katalon-error.txt" | ForEach-Object { Write-Host $_ }
-        }
-        
-        $exitCode = $process.ExitCode
         $endTime = Get-Date
         $duration = $endTime - $startTime
         
@@ -136,7 +122,14 @@ jobs:
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
-        # Set LASTEXITCODE để dùng sau
+        # Đọc output nếu có
+        if (Test-Path "katalon-output.txt") {
+          Write-Host "=== Last 50 lines of Katalon Output ==="
+          $outputLines = Get-Content "katalon-output.txt" -Tail 50
+          $outputLines | ForEach-Object { Write-Host $_ }
+        }
+        
+        # Set để dùng sau
         $global:LASTEXITCODE = $exitCode
         
         # Kiểm tra nếu chạy quá nhanh (có thể test không chạy)
@@ -266,7 +259,6 @@ jobs:
           **/*.xml
           **/*.json
           katalon-output.txt
-          katalon-error.txt
         if-no-files-found: warn
         retention-days: 30
 
