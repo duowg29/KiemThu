@@ -54,19 +54,41 @@ jobs:
         Write-Host "Katalon path: $KATALON_HOME\katalon.exe"
         Write-Host "Project path: $PWD"
         
+        # Kiểm tra test suite có tồn tại không
+        $testSuitePath = "Test Suites/UI Testing"
+        if (-not (Test-Path "$PWD\$testSuitePath.ts")) {
+          Write-Host "WARNING: Test suite file not found at $PWD\$testSuitePath.ts"
+          Write-Host "Listing available test suites:"
+          Get-ChildItem -Path "$PWD\Test Suites" -Recurse -Filter "*.ts" | ForEach-Object {
+            Write-Host "  $($_.FullName.Replace($PWD, '.'))"
+          }
+        } else {
+          Write-Host "Test suite found: $PWD\$testSuitePath.ts"
+        }
+        
+        Write-Host "Starting Katalon execution..."
+        $startTime = Get-Date
+        
+        # Chạy Katalon với output chi tiết
         & "$KATALON_HOME\katalon.exe" -runMode=console `
           -projectPath="$PWD" `
           -retry=0 `
-          -testSuitePath="Test Suites/UI Testing" `
+          -testSuitePath="$testSuitePath" `
           -executionProfile="default" `
           -browserType="Chrome (headless)" `
           -apiKey="" `
           -g_username="" `
-          -g_password=""
+          -g_password="" `
+          -reportFolder="$PWD\Reports"
+        
+        $endTime = Get-Date
+        $duration = $endTime - $startTime
+        Write-Host "Katalon execution completed in $($duration.TotalSeconds) seconds"
+        Write-Host "Exit code: $LASTEXITCODE"
           
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Tests failed with exit code $LASTEXITCODE"
-          exit $LASTEXITCODE
+          # Không exit ngay, để tìm reports trước
         }
         
         Write-Host "Finding test reports..."
@@ -98,11 +120,34 @@ jobs:
         # List tất cả files trong Reports
         if (Test-Path "Reports") {
           Write-Host "Contents of Reports folder:"
-          Get-ChildItem -Path "Reports" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "  $($_.FullName)"
+          $reportFiles = Get-ChildItem -Path "Reports" -Recurse -ErrorAction SilentlyContinue
+          if ($reportFiles.Count -eq 0) {
+            Write-Host "  (empty)"
+          } else {
+            $reportFiles | ForEach-Object {
+              Write-Host "  $($_.FullName)"
+            }
           }
         } else {
           Write-Host "Reports folder not found in project root"
+        }
+        
+        # Tìm reports trong thư mục Katalon workspace (có thể reports được tạo ở đó)
+        $katalonWorkspace = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2\workspace"
+        if (Test-Path $katalonWorkspace) {
+          Write-Host "Searching in Katalon workspace: $katalonWorkspace"
+          Get-ChildItem -Path $katalonWorkspace -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Found Reports in workspace at: $($_.FullName)"
+            # Copy reports về project nếu tìm thấy
+            Copy-Item -Path "$($_.FullName)\*" -Destination "Reports\" -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Copied reports to project Reports folder"
+          }
+        }
+        
+        # Nếu vẫn không có reports và test chạy quá nhanh, có thể test không chạy
+        if (-not (Test-Path "Reports") -or (Get-ChildItem -Path "Reports" -Recurse -ErrorAction SilentlyContinue).Count -eq 0) {
+          Write-Host "WARNING: No reports found. Test may not have executed properly."
+          Write-Host "Check if test suite path is correct and contains test cases."
         }
           
     - name: Upload Test Reports
