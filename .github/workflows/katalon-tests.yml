@@ -35,10 +35,10 @@ jobs:
       run: |
         # Thay đổi đường dẫn này theo đường dẫn Katalon Studio trên runner của bạn
         # Option 1: Nếu cài trong Program Files
-        $KATALON_HOME = "$env:ProgramFiles\Katalon\Katalon Studio"
+        # $KATALON_HOME = "$env:ProgramFiles\Katalon\Katalon Studio"
         
         # Option 2: Nếu cài trong user directory (uncomment dòng này và comment dòng trên)
-        # $KATALON_HOME = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
+         $KATALON_HOME = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
         
         # Option 3: Nếu dùng đường dẫn tùy chỉnh (uncomment và sửa)
         # $KATALON_HOME = "C:\Path\To\Katalon\Studio"
