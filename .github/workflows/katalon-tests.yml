@@ -57,7 +57,7 @@ jobs:
         & "$KATALON_HOME\katalon.exe" -runMode=console `
           -projectPath="$PWD" `
           -retry=0 `
-          -testSuitePath="Test Suites/Functional/Account Management Testcases" `
+          -testSuitePath="Test Suites/UI Testing" `
           -executionProfile="default" `
           -browserType="Chrome (headless)" `
           -apiKey="" `
