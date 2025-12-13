@@ -197,9 +197,9 @@ jobs:
         if (Test-Path $profilePath) {
           $profileContent = Get-Content $profilePath -Raw
           if ($profileContent -match $baseUrl) {
-            Write-Host "✓ Profile 'default' contains correct URL"
+            Write-Host "Profile default contains correct URL"
           } else {
-            Write-Host "WARNING: Profile 'default' may not contain the expected URL"
+            Write-Host "WARNING: Profile default may not contain the expected URL"
             Write-Host "Profile content preview:"
             Get-Content $profilePath | Select-Object -First 10 | ForEach-Object { Write-Host "  $_" }
           }
@@ -266,7 +266,8 @@ jobs:
         $duration = $endTime - $startTime
         
         Write-Host "=========================================="
-        Write-Host "Katalon execution completed in $($duration.TotalSeconds) seconds"
+        $durationSeconds = [math]::Round($duration.TotalSeconds, 2)
+        Write-Host "Katalon execution completed in $durationSeconds seconds"
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
@@ -294,7 +295,8 @@ jobs:
         
         # Kiểm tra nếu chạy quá nhanh (có thể test không chạy)
         if ($duration.TotalSeconds -lt 10) {
-          Write-Host "WARNING: Test completed too quickly ($($duration.TotalSeconds) seconds)."
+          $durationSeconds = [math]::Round($duration.TotalSeconds, 2)
+          Write-Host "WARNING: Test completed too quickly ($durationSeconds seconds)."
           Write-Host "This may indicate that tests did not actually run."
           Write-Host "Possible reasons:"
           Write-Host "  1. Test suite path is incorrect"
