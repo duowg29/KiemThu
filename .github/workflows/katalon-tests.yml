@@ -102,6 +102,7 @@ jobs:
         Write-Host "Running Katalon Studio tests..."
         Write-Host "Katalon path: $KATALON_HOME\katalon.exe"
         Write-Host "Project path: $PWD"
+        Write-Host "Note: Project path is automatically set to workspace directory where runner checkout code"
         
         # Dùng test suite cụ thể thay vì collection (collection có thể không chạy được trong console mode)
         $testSuitePath = "Test Suites/UI/Login Testcases"
@@ -183,8 +184,8 @@ jobs:
         # Chạy Katalon trực tiếp và capture output
         Write-Host "Executing: $katalonExe"
         
-        # Set base URL for testing - Đảm bảo test chạy trên URL đúng, không phải localhost
-        $baseUrl = "https://upward-cunning-anteater.ngrok-free.app/CAMNEST/"
+        # Set base URL for testing - Chạy trên localhost
+        $baseUrl = "http://localhost/CAMNEST/"
         Write-Host "=========================================="
         Write-Host "CONFIGURATION:"
         Write-Host "  Base URL: $baseUrl"
@@ -196,8 +197,8 @@ jobs:
         $profilePath = "$PWD\Profiles\default.glbl"
         if (Test-Path $profilePath) {
           $profileContent = Get-Content $profilePath -Raw
-          if ($profileContent -match $baseUrl) {
-            Write-Host "Profile default contains correct URL"
+          if ($profileContent -match [regex]::Escape($baseUrl)) {
+            Write-Host "✓ Profile default contains correct URL"
           } else {
             Write-Host "WARNING: Profile default may not contain the expected URL"
             Write-Host "Profile content preview:"

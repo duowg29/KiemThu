@@ -6,6 +6,6 @@
    <defaultProfile>true</defaultProfile>
    <globalVariableEntity>
       <name>baseUrl</name>
-      <value>https://upward-cunning-anteater.ngrok-free.app/CAMNEST/</value>
+      <value>http://localhost/CAMNEST/</value>
    </globalVariableEntity>
 </GlobalVariableEntities>
