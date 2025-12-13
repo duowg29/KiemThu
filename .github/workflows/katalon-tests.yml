@@ -197,8 +197,8 @@ jobs:
         $profilePath = "$PWD\Profiles\default.glbl"
         if (Test-Path $profilePath) {
           $profileContent = Get-Content $profilePath -Raw
-          if ($profileContent -match [regex]::Escape($baseUrl)) {
-            Write-Host "✓ Profile default contains correct URL"
+          if ($profileContent -like "*$baseUrl*") {
+            Write-Host "Profile default contains correct URL"
           } else {
             Write-Host "WARNING: Profile default may not contain the expected URL"
             Write-Host "Profile content preview:"
