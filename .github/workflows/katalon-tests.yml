@@ -21,7 +21,7 @@ jobs:
     - name: Run Katalon Tests
       timeout-minutes: 30
       env:
-        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false'
+        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
         KATALON_OPTS: '-noSplash -consoleLog'
       run: |
         # Đường dẫn Katalon
@@ -54,23 +54,29 @@ jobs:
         Write-Host "Project: $projectPath"
         Write-Host "Test Suite: $testSuitePath"
         
-        # Chạy Katalon
-        & $katalonExe `
-          -runMode=console `
-          -console `
-          -noSplash `
-          -consoleLog `
-          -projectPath="$projectPath" `
-          -testSuitePath="$testSuitePathFormatted" `
-          -executionProfile=default `
-          -browserType="Chrome (headless)" `
-          -g_baseUrl="$baseUrl" `
-          -reportFolder="$reportFolder"
-        
-        $exitCode = $LASTEXITCODE
-        if ($null -eq $exitCode) { $exitCode = 0 }
-        
-        Write-Host "Tests completed with exit code: $exitCode"
+         # Set environment variables trước khi chạy
+         $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+         $env:KATALON_OPTS = '-noSplash -consoleLog'
+         
+         # Chạy Katalon
+         Write-Host "Starting Katalon execution..."
+         & $katalonExe `
+           -runMode=console `
+           -console `
+           -noSplash `
+           -consoleLog `
+           -projectPath="$projectPath" `
+           -testSuitePath="$testSuitePathFormatted" `
+           -executionProfile=default `
+           -browserType="Chrome (headless)" `
+           -g_baseUrl="$baseUrl" `
+           -reportFolder="$reportFolder" `
+           -retry=0
+         
+         $exitCode = $LASTEXITCODE
+         if ($null -eq $exitCode) { $exitCode = 0 }
+         
+         Write-Host "Tests completed with exit code: $exitCode"
           
     - name: Upload Test Reports
       if: always()
