@@ -15,7 +15,13 @@ pipeline {
                 echo 'Running Katalon Studio tests...'
                 timeout(time: 30, unit: 'MINUTES') {
                 bat '''
-                    set JAVA_OPTS=-Djava.awt.headless=true -Dkatalon.execution.report.enabled=false
+                    REM Tắt hoàn toàn WebView server và các UI components
+                    set JAVA_OPTS=-Djava.awt.headless=true ^
+                        -Dorg.eclipse.swt.browser.DefaultType=none ^
+                        -Dorg.eclipse.swt.browser.noDefault=true ^
+                        -Dkatalon.execution.report.enabled=false ^
+                        -Dkatalon.webview.enabled=false ^
+                        -Dorg.eclipse.swt.browser.chromium.enabled=false
                     set KATALON_OPTS=-noSplash -noExit -consoleLog
                     "C:\\Users\\feu29\\.katalon\\packages\\KSE-10.4.2\\katalon.exe" -runMode=console ^
                     -projectPath="%WORKSPACE%" ^
