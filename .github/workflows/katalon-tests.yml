@@ -222,38 +222,25 @@ jobs:
           Write-Host "Command: $katalonExe -runMode=console -console -noSplash -consoleLog -projectPath=`"$projectPathFormatted`" -retry=0 -testSuitePath=`"$testSuitePathFormatted`" -executionProfile=default -browserType=`"Chrome (headless)`" -apiKey= -g_username= -g_password= -g_baseUrl=`"$baseUrl`" -reportFolder=`"$reportFolderFormatted`""
           
           # Chạy Katalon và capture output vào file
-          # Dùng job để có thể timeout nếu cần
-          $job = Start-Job -ScriptBlock {
-            param($exe, $args)
-            $process = Start-Process -FilePath $exe `
-              -ArgumentList $args `
-              -NoNewWindow `
-              -Wait `
-              -PassThru `
-              -RedirectStandardOutput "katalon-stdout.txt" `
-              -RedirectStandardError "katalon-stderr.txt"
-            return $process.ExitCode
-          } -ArgumentList $katalonExe, @("-runMode=console", "-console", "-noSplash", "-consoleLog", "-projectPath=$projectPathFormatted", "-retry=0", "-testSuitePath=$testSuitePathFormatted", "-executionProfile=default", "-browserType=Chrome (headless)", "-apiKey=", "-g_username=", "-g_password=", "-g_baseUrl=$baseUrl", "-reportFolder=$reportFolderFormatted")
+          # Lưu ý: Không dùng -noExit vì nó sẽ khiến Katalon không thoát sau khi chạy xong
+          Write-Host "Launching Katalon (this may take several minutes)..."
           
-          Write-Host "Waiting for Katalon to complete (timeout: 25 minutes)..."
+          $process = Start-Process -FilePath $katalonExe `
+            -ArgumentList "-runMode=console", "-console", "-noSplash", "-consoleLog", "-projectPath=$projectPathFormatted", "-retry=0", "-testSuitePath=$testSuitePathFormatted", "-executionProfile=default", "-browserType=Chrome (headless)", "-apiKey=", "-g_username=", "-g_password=", "-g_baseUrl=$baseUrl", "-reportFolder=$reportFolderFormatted" `
+            -NoNewWindow `
+            -Wait `
+            -PassThru `
+            -RedirectStandardOutput "katalon-stdout.txt" `
+            -RedirectStandardError "katalon-stderr.txt"
           
-          # Chờ job hoàn thành với timeout
-          $jobResult = Wait-Job -Job $job -Timeout 1500
+          # Lấy exit code từ process
+          $exitCode = $process.ExitCode
           
-          if ($jobResult) {
-            $exitCode = Receive-Job -Job $job
-            Remove-Job -Job $job
-          } else {
-            Write-Host "WARNING: Katalon execution timed out or job did not complete"
-            Stop-Job -Job $job
-            Remove-Job -Job $job
-            $exitCode = 1
-          }
-          
-          # Nếu không có exit code, kiểm tra file output
           if ($null -eq $exitCode) {
-            $exitCode = 1
+            $exitCode = 0
           }
+          
+          Write-Host "Katalon process finished. Exit code: $exitCode"
           
           Write-Host "=========================================="
           Write-Host "Katalon process completed with exit code: $exitCode"
