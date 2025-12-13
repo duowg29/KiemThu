@@ -297,7 +297,7 @@ jobs:
         # Kiểm tra nếu chạy quá nhanh (có thể test không chạy)
         if ($duration.TotalSeconds -lt 10) {
           $durationSeconds = [math]::Round($duration.TotalSeconds, 2)
-          Write-Host "WARNING: Test completed too quickly ($durationSeconds seconds)."
+          Write-Host "WARNING: Test completed too quickly - $durationSeconds seconds."
           Write-Host "This may indicate that tests did not actually run."
           Write-Host "Possible reasons:"
           Write-Host "  1. Test suite path is incorrect"
