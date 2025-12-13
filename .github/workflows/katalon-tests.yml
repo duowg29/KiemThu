@@ -35,19 +35,68 @@ jobs:
       run: |
         # Thay đổi đường dẫn này theo đường dẫn Katalon Studio trên runner của bạn
         # Option 1: Nếu cài trong Program Files
-        # $KATALON_HOME = "$env:ProgramFiles\Katalon\Katalon Studio"
+        # $KATALON_HOME_ORIGINAL = "$env:ProgramFiles\Katalon\Katalon Studio"
         
         # Option 2: Nếu cài trong user directory (uncomment dòng này và comment dòng trên)
-         $KATALON_HOME = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
+         $KATALON_HOME_ORIGINAL = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
         
         # Option 3: Nếu dùng đường dẫn tùy chỉnh (uncomment và sửa)
-        # $KATALON_HOME = "C:\Path\To\Katalon\Studio"
+        # $KATALON_HOME_ORIGINAL = "C:\Path\To\Katalon\Studio"
         
-        if (-not (Test-Path "$KATALON_HOME\katalon.exe")) {
-          Write-Host "Katalon Studio not found at $KATALON_HOME"
+        if (-not (Test-Path "$KATALON_HOME_ORIGINAL\katalon.exe")) {
+          Write-Host "Katalon Studio not found at $KATALON_HOME_ORIGINAL"
           Write-Host "Please install Katalon Studio or use self-hosted runner with Katalon pre-installed"
           Write-Host "Or update the KATALON_HOME path in this workflow file"
           exit 1
+        }
+        
+        # Kiểm tra độ dài đường dẫn để tránh lỗi "path too long"
+        $fullPath = "$KATALON_HOME_ORIGINAL\katalon.exe"
+        $pathLength = $fullPath.Length
+        
+        Write-Host "Original Katalon path length: $pathLength characters"
+        Write-Host "Original path: $KATALON_HOME_ORIGINAL"
+        
+        # Nếu đường dẫn quá dài (>200 ký tự), tạo symbolic link ngắn hơn
+        $KATALON_HOME = $KATALON_HOME_ORIGINAL
+        if ($pathLength -gt 200) {
+          Write-Host "WARNING: Path is too long ($pathLength chars). Creating symbolic link..."
+          
+          # Tạo symbolic link với đường dẫn ngắn hơn
+          $shortPath = "C:\KS"
+          $symlinkPath = "$shortPath\KSE-10.4.2"
+          
+          # Xóa symlink cũ nếu có
+          if (Test-Path $symlinkPath) {
+            Remove-Item $symlinkPath -Force -ErrorAction SilentlyContinue
+          }
+          
+          # Tạo thư mục cha nếu chưa có
+          if (-not (Test-Path $shortPath)) {
+            New-Item -ItemType Directory -Path $shortPath -Force | Out-Null
+          }
+          
+          # Tạo symbolic link (cần quyền admin hoặc Developer Mode)
+          try {
+            # Thử dùng cmd để tạo symlink (không cần admin nếu có Developer Mode)
+            $cmd = "cmd /c mklink /D `"$symlinkPath`" `"$KATALON_HOME_ORIGINAL`""
+            Invoke-Expression $cmd | Out-Null
+            
+            if (Test-Path "$symlinkPath\katalon.exe") {
+              $KATALON_HOME = $symlinkPath
+              Write-Host "Symbolic link created successfully: $symlinkPath -> $KATALON_HOME_ORIGINAL"
+              Write-Host "New path length: $($symlinkPath.Length) characters"
+            } else {
+              Write-Host "WARNING: Symbolic link creation may have failed. Using original path."
+              Write-Host "If you see 'path too long' error, please:"
+              Write-Host "  1. Enable Windows Developer Mode, OR"
+              Write-Host "  2. Run PowerShell as Administrator, OR"
+              Write-Host "  3. Move Katalon to a shorter path (e.g., C:\KS\KSE-10.4.2)"
+            }
+          } catch {
+            Write-Host "WARNING: Could not create symbolic link: $($_.Exception.Message)"
+            Write-Host "Using original path. If you see 'path too long' error, please move Katalon to a shorter path."
+          }
         }
         
         Write-Host "Running Katalon Studio tests..."
@@ -134,8 +183,34 @@ jobs:
         # Chạy Katalon trực tiếp và capture output
         Write-Host "Executing: $katalonExe"
         
+        # Set base URL for testing - Đảm bảo test chạy trên URL đúng, không phải localhost
+        $baseUrl = "https://upward-cunning-anteater.ngrok-free.app/CAMNEST/"
+        Write-Host "=========================================="
+        Write-Host "CONFIGURATION:"
+        Write-Host "  Base URL: $baseUrl"
+        Write-Host "  Execution Profile: default"
+        Write-Host "  Browser: Chrome (headless)"
+        Write-Host "=========================================="
+        
+        # Kiểm tra profile có URL đúng không
+        $profilePath = "$PWD\Profiles\default.glbl"
+        if (Test-Path $profilePath) {
+          $profileContent = Get-Content $profilePath -Raw
+          if ($profileContent -match $baseUrl) {
+            Write-Host "✓ Profile 'default' contains correct URL"
+          } else {
+            Write-Host "WARNING: Profile 'default' may not contain the expected URL"
+            Write-Host "Profile content preview:"
+            Get-Content $profilePath | Select-Object -First 10 | ForEach-Object { Write-Host "  $_" }
+          }
+        }
+        
+        Write-Host "Starting Katalon with URL: $baseUrl"
+        Write-Host "=========================================="
+        
         try {
           # Chạy Katalon với tất cả flags cần thiết để force console mode
+          # -g_baseUrl sẽ override giá trị trong profile nếu cần
           $process = Start-Process -FilePath $katalonExe `
             -ArgumentList @(
               "-runMode=console",
@@ -148,6 +223,7 @@ jobs:
               "-apiKey=",
               "-g_username=",
               "-g_password=",
+              "-g_baseUrl=$baseUrl",
               "-reportFolder=$reportFolderFormatted"
             ) `
             -NoNewWindow `

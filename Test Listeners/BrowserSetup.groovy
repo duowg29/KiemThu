@@ -32,5 +32,10 @@ class BrowserSetup {
 	def setup() {
 		WebUI.openBrowser('')
 		WebUI.maximizeWindow()
+		
+		// Navigate to base URL from global variable if set
+		if (GlobalVariable.baseUrl != null && !GlobalVariable.baseUrl.isEmpty()) {
+			WebUI.navigateToUrl(GlobalVariable.baseUrl)
+		}
 	}
 }
