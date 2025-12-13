@@ -68,12 +68,43 @@ jobs:
           Write-Host "Tests failed with exit code $LASTEXITCODE"
           exit $LASTEXITCODE
         }
+        
+        Write-Host "Finding test reports..."
+        Write-Host "Current directory: $PWD"
+        
+        # Tìm tất cả reports trong project
+        $reportsPaths = @()
+        if (Test-Path "Reports") {
+          Write-Host "Found Reports folder"
+          $reportsPaths += "Reports"
+        }
+        if (Test-Path ".\Reports") {
+          Write-Host "Found .\Reports folder"
+          $reportsPaths += ".\Reports"
+        }
+        
+        # Tìm reports trong các thư mục con
+        Get-ChildItem -Path $PWD -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue | ForEach-Object {
+          Write-Host "Found Reports at: $($_.FullName)"
+          $reportsPaths += $_.FullName
+        }
+        
+        # List tất cả files trong Reports nếu có
+        foreach ($path in $reportsPaths) {
+          Write-Host "Contents of $path :"
+          Get-ChildItem -Path $path -Recurse -ErrorAction SilentlyContinue | Select-Object FullName | ForEach-Object {
+            Write-Host "  $($_.FullName)"
+          }
+        }
           
     - name: Upload Test Reports
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-reports
-        path: Reports/**
+        path: |
+          Reports/**
+          **/Reports/**
+        if-no-files-found: warn
         retention-days: 30
 
