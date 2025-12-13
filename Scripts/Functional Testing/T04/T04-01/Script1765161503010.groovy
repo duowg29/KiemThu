@@ -21,9 +21,9 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (8)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/a (29)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_pro'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_pro (2)'))
 
 WebUI.takeScreenshotAsCheckpoint('T04-01')
 

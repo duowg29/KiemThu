@@ -21,13 +21,13 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (21)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/a (30)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (1)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (4)'))
 
-WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (1)'), 'Nikon', true)
+WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (4)'), 'Nikon', true)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn (1)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn (4)'))
 
 WebUI.takeScreenshotAsCheckpoint('T10-01')
 
