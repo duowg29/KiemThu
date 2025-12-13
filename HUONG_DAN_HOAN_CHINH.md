@@ -667,8 +667,8 @@ Ctrl + C
 .\svc.cmd restart
 
 # Test lệnh Katalon local (trước khi push)
-$KATALON_HOME = "C:\Users\YourName\.katalon\packages\KSE-10.4.2"
-$PROJECT_PATH = "E:\path\to\project"
+$KATALON_HOME = "C:\Users\feu29\.katalon\packages\KSE-10.4.2"
+$PROJECT_PATH = "C:\Users\feu29\Katalon Studio\KiemThu"
 $TEST_SUITE = "Test Suites/UI/Login Testcases"
 
 & "$KATALON_HOME\katalon.exe" -runMode=console `
