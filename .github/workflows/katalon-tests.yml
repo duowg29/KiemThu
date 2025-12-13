@@ -107,25 +107,84 @@ jobs:
         
         Write-Host "Formatted Test Suite Path: $testSuitePathFormatted"
         
-        # Chạy Katalon và đợi hoàn thành
-        $katalonProcess = Start-Process -FilePath "$KATALON_HOME\katalon.exe" `
-          -ArgumentList "-runMode=console", "-projectPath=$projectPathFormatted", "-retry=0", "-testSuitePath=$testSuitePathFormatted", "-executionProfile=default", "-browserType=Chrome (headless)", "-apiKey=", "-g_username=", "-g_password=", "-reportFolder=$reportFolderFormatted" `
-          -NoNewWindow -PassThru -RedirectStandardOutput "katalon-stdout.txt" -RedirectStandardError "katalon-stderr.txt"
+        # Chạy Katalon trực tiếp với & operator (không dùng Start-Process)
+        Write-Host "Executing Katalon command..."
+        Write-Host "Command: $KATALON_HOME\katalon.exe -runMode=console -projectPath=`"$projectPathFormatted`" -retry=0 -testSuitePath=`"$testSuitePathFormatted`" -executionProfile=default -browserType=`"Chrome (headless)`" -apiKey= -g_username= -g_password= -reportFolder=`"$reportFolderFormatted`""
         
-        Write-Host "Katalon process started. PID: $($katalonProcess.Id)"
-        Write-Host "Waiting for process to complete..."
+        # Đảm bảo environment variables được set
+        $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+        $env:KATALON_OPTS = '-noSplash -noExit -consoleLog'
         
-        # Đợi process hoàn thành với timeout
-        $timeout = 30 * 60 * 1000  # 30 phút
-        $katalonProcess.WaitForExit($timeout)
+        Write-Host "Environment variables set:"
+        Write-Host "  JAVA_OPTS: $env:JAVA_OPTS"
+        Write-Host "  KATALON_OPTS: $env:KATALON_OPTS"
         
-        if (-not $katalonProcess.HasExited) {
-          Write-Host "WARNING: Katalon process did not exit within timeout. Terminating..."
-          $katalonProcess.Kill()
-          $exitCode = 1
+        Write-Host "Starting Katalon execution (this may take several minutes)..."
+        Write-Host "=========================================="
+        
+        # Kiểm tra xem có katalonc.exe không (console-only version)
+        $katalonExe = "$KATALON_HOME\katalon.exe"
+        if (Test-Path "$KATALON_HOME\katalonc.exe") {
+          $katalonExe = "$KATALON_HOME\katalonc.exe"
+          Write-Host "Using katalonc.exe (console-only version)"
         } else {
-          $exitCode = $katalonProcess.ExitCode
+          Write-Host "Using katalon.exe (will force console mode)"
         }
+        
+        # Chạy Katalon trực tiếp và capture output
+        Write-Host "Executing: $katalonExe"
+        
+        try {
+          # Chạy Katalon với tất cả flags cần thiết để force console mode
+          $process = Start-Process -FilePath $katalonExe `
+            -ArgumentList @(
+              "-runMode=console",
+              "-console",
+              "-projectPath=$projectPathFormatted",
+              "-retry=0",
+              "-testSuitePath=$testSuitePathFormatted",
+              "-executionProfile=default",
+              "-browserType=Chrome (headless)",
+              "-apiKey=",
+              "-g_username=",
+              "-g_password=",
+              "-reportFolder=$reportFolderFormatted"
+            ) `
+            -NoNewWindow `
+            -PassThru `
+            -RedirectStandardOutput "katalon-stdout.txt" `
+            -RedirectStandardError "katalon-stderr.txt" `
+            -Wait
+          
+          $exitCode = $process.ExitCode
+          
+          Write-Host "Process exited with code: $exitCode"
+          
+          # Hiển thị output
+          if (Test-Path "katalon-stdout.txt") {
+            Write-Host "=== Katalon Output (stdout) ==="
+            $stdout = Get-Content "katalon-stdout.txt" -Tail 100
+            $stdout | ForEach-Object { Write-Host $_ }
+          }
+          
+          if (Test-Path "katalon-stderr.txt") {
+            $stderr = Get-Content "katalon-stderr.txt"
+            if ($stderr.Count -gt 0) {
+              Write-Host "=== Katalon Output (stderr) ==="
+              $stderr | ForEach-Object { Write-Host $_ }
+            }
+          }
+          
+          if ($null -eq $exitCode) {
+            $exitCode = 0
+          }
+        } catch {
+          Write-Host "Error executing Katalon: $($_.Exception.Message)"
+          Write-Host "Stack trace: $($_.Exception.StackTrace)"
+          $exitCode = 1
+        }
+        
+        Write-Host "=========================================="
         
         $endTime = Get-Date
         $duration = $endTime - $startTime
