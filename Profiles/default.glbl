@@ -4,8 +4,11 @@
    <name>default</name>
    <tag></tag>
    <defaultProfile>true</defaultProfile>
-   <globalVariableEntity>
+   <GlobalVariableEntity>
+      <description></description>
+      <initValue>'http://localhost/CAMNEST/'</initValue>
       <name>baseUrl</name>
-      <value>https://upward-cunning-anteater.ngrok-free.app/CAMNEST/</value>
-   </globalVariableEntity>
+      <protected>false</protected>
+      <valueType>STRING</valueType>
+   </GlobalVariableEntity>
 </GlobalVariableEntities>
