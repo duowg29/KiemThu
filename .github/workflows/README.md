@@ -1,26 +1,19 @@
 # GitHub Actions Workflows cho Katalon Studio
 
-## Có 2 workflow files:
+## Workflow: `katalon-tests.yml`
 
-### 1. `katalon-tests.yml` - Dùng Katalon Studio (Self-hosted runner)
-- **Dùng khi:** Bạn có self-hosted runner với Katalon Studio đã cài sẵn
-- **Cách dùng:** 
-  1. Setup self-hosted runner (xem hướng dẫn trong `HUONG_DAN_GITHUB_ACTIONS.md`)
-  2. Sửa đường dẫn `$KATALON_HOME` trong file workflow
-  3. Đổi `runs-on: windows-latest` thành `runs-on: self-hosted`
+Workflow này sử dụng **Self-Hosted Runner** để chạy Katalon Studio tests.
 
-### 2. `katalon-tests-kre.yml` - Dùng Katalon Runtime Engine (KRE)
-- **Dùng khi:** Chạy trên GitHub-hosted runners (không cần máy riêng)
-- **Cách dùng:** 
-  1. Commit và push file này lên GitHub
-  2. Workflow sẽ tự động tải KRE và chạy tests
-  3. Không cần cấu hình thêm
+### Yêu Cầu:
+- ✅ Self-hosted runner đã được setup
+- ✅ Katalon Studio đã cài đặt trên máy runner
+- ✅ Đường dẫn Katalon đã được cấu hình trong workflow
 
-## Quick Start
+### Quick Start
 
-1. **Chọn workflow phù hợp:**
-   - Nếu có self-hosted runner → dùng `katalon-tests.yml`
-   - Nếu không → dùng `katalon-tests-kre.yml`
+1. **Setup self-hosted runner:**
+   - Xem hướng dẫn trong `HUONG_DAN_CHI_TIET_GITHUB_ACTIONS.md` (phần Cách 2)
+   - Hoặc `HUONG_DAN_FIX_LOI_KRE.md`
 
 2. **Sửa test suite (nếu cần):**
    - Tìm dòng `-testSuitePath="Test Suites/Functional/Login Testcases"`

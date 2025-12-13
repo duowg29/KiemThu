@@ -21,29 +21,12 @@ on:
 jobs:
   run-katalon-tests:
     name: Run Katalon Studio Tests
-    runs-on: windows-latest  # Hoặc self-hosted nếu bạn có runner với Katalon Studio
+    runs-on: self-hosted  # YÊU CẦU: Phải có self-hosted runner đã setup
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '11'
-        
-    - name: Download and Setup Katalon Studio
-      if: runner.os == 'Windows'
-      run: |
-        # Tải Katalon Studio (nếu chưa có trên runner)
-        # Hoặc sử dụng Katalon đã cài sẵn
-        $KATALON_VERSION = "10.4.2"
-        $KATALON_URL = "https://download.katalon.com/$KATALON_VERSION/katalon-studio-windows-64-$KATALON_VERSION.zip"
-        
-        # Nếu dùng self-hosted runner với Katalon đã cài, bỏ qua bước này
-        # và set biến môi trường KATALON_HOME trỏ đến đường dẫn cài đặt
-        
     - name: Run Katalon Tests
       timeout-minutes: 30
       env:
@@ -74,7 +57,7 @@ jobs:
         & "$KATALON_HOME\katalon.exe" -runMode=console `
           -projectPath="$PWD" `
           -retry=0 `
-          -testSuitePath="Test Suites/Functional/Login Testcases" `
+          -testSuitePath="Test Suites/Functional/Account Management Testcases" `
           -executionProfile="default" `
           -browserType="Chrome (headless)" `
           -apiKey="" `
