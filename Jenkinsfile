@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Checking out code from GitHub...'
                 git branch: 'main', 
-                     url: 'https://github.com/ThienPhu41224/KiemThu.git',
+                     url: 'https://github.com/duowg29/KiemThu',
                      credentialsId: '' // Để trống nếu repo public, hoặc thêm credentialsId nếu private
             }
         }
