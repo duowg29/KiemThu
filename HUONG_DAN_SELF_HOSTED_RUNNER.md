@@ -1,0 +1,545 @@
+# Hướng Dẫn Chi Tiết: Self-Hosted Runner cho GitHub Actions với Katalon Studio
+
+## 📋 Mục Lục
+
+1. [Tổng Quan](#tổng-quan)
+2. [Yêu Cầu Hệ Thống](#yêu-cầu-hệ-thống)
+3. [Bước 1: Cài Đặt Katalon Studio](#bước-1-cài-đặt-katalon-studio)
+4. [Bước 2: Setup Self-Hosted Runner](#bước-2-setup-self-hosted-runner)
+5. [Bước 3: Cấu Hình Workflow](#bước-3-cấu-hình-workflow)
+6. [Bước 4: Chạy Workflow và Xem Kết Quả](#bước-4-chạy-workflow-và-xem-kết-quả)
+7. [Bước 5: Xem và Download Test Reports](#bước-5-xem-và-download-test-reports)
+8. [Troubleshooting](#troubleshooting)
+9. [Các Tính Năng Nâng Cao](#các-tính-năng-nâng-cao)
+
+---
+
+## 🎯 Tổng Quan
+
+Self-Hosted Runner cho phép bạn chạy GitHub Actions workflows trên máy tính của chính bạn, giúp:
+- ✅ Chạy Katalon Studio tests trên môi trường local
+- ✅ Không cần Katalon Runtime Engine (KRE)
+- ✅ Kiểm soát hoàn toàn môi trường test
+- ✅ Xem reports trực tiếp trên GitHub Actions
+
+---
+
+## 💻 Yêu Cầu Hệ Thống
+
+### Phần Mềm Cần Thiết:
+- ✅ **Windows 10/11** (64-bit)
+- ✅ **Katalon Studio** (phiên bản 10.4.2 hoặc mới hơn)
+- ✅ **Java** (thường đi kèm với Katalon)
+- ✅ **Chrome Browser** (cho headless testing)
+- ✅ **Git** (để clone repository)
+- ✅ **PowerShell** (đã có sẵn trên Windows)
+
+### Yêu Cầu Khác:
+- ✅ **Kết nối Internet** ổn định
+- ✅ **GitHub Account** với quyền truy cập repository
+- ✅ **Dung lượng ổ đĩa:** Tối thiểu 5GB trống
+
+---
+
+## 📥 Bước 1: Cài Đặt Katalon Studio
+
+### 1.1. Download Katalon Studio
+
+1. Truy cập: https://www.katalon.com/download/
+2. Chọn **"Katalon Studio"** (không phải KRE)
+3. Download file `.exe` cho Windows
+4. Chạy file installer và làm theo hướng dẫn
+
+### 1.2. Cài Đặt và Kích Hoạt
+
+1. **Mở Katalon Studio** lần đầu
+2. **Đăng nhập** với tài khoản Katalon (hoặc tạo tài khoản mới)
+3. **Kích hoạt trial** hoặc license nếu có
+4. **Mở project** của bạn (clone từ GitHub nếu chưa có)
+
+### 1.3. Xác Nhận Đường Dẫn Cài Đặt
+
+Katalon Studio thường được cài ở một trong các vị trí sau:
+
+- `C:\Users\<TênUser>\.katalon\packages\KSE-10.4.2\`
+- `C:\Program Files\Katalon\Katalon Studio\`
+
+**Kiểm tra đường dẫn:**
+1. Mở File Explorer
+2. Tìm file `katalon.exe` hoặc `katalonc.exe`
+3. Copy đường dẫn đầy đủ (sẽ dùng ở bước sau)
+
+**Ví dụ:** `C:\Users\feu29\.katalon\packages\KSE-10.4.2\`
+
+---
+
+## 🚀 Bước 2: Setup Self-Hosted Runner
+
+### 2.1. Chọn Vị Trí Cài Đặt Runner
+
+**Bạn có thể cài runner ở BẤT KỲ Ổ ĐĨA NÀO:**
+- ✅ Ổ C: `C:\actions-runner`
+- ✅ Ổ E: `E:\actions-runner` ⭐ (Khuyến nghị nếu ổ E có nhiều dung lượng)
+- ✅ Ổ D: `D:\actions-runner`
+- ✅ Bất kỳ thư mục nào khác
+
+**Ví dụ:** Chúng ta sẽ dùng ổ E trong hướng dẫn này.
+
+### 2.2. Mở PowerShell
+
+1. Nhấn `Windows + X`
+2. Chọn **"Windows PowerShell"** hoặc **"Terminal"**
+3. Hoặc tìm "PowerShell" trong Start Menu
+
+### 2.3. Tạo Thư Mục và Download Runner
+
+```powershell
+# Chuyển sang ổ E (hoặc ổ bạn muốn)
+E:
+
+# Tạo thư mục actions-runner
+mkdir actions-runner
+
+# Vào thư mục vừa tạo
+cd actions-runner
+
+# Download GitHub Actions Runner
+# Thay v2.329.0 bằng phiên bản mới nhất nếu cần
+Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.329.0/actions-runner-win-x64-2.329.0.zip -OutFile actions-runner-win-x64-2.329.0.zip
+```
+
+### 2.4. Giải Nén File
+
+```powershell
+# Giải nén file zip
+Expand-Archive -Path actions-runner-win-x64-2.329.0.zip -DestinationPath .
+
+# Xóa file zip (tùy chọn)
+Remove-Item actions-runner-win-x64-2.329.0.zip
+```
+
+### 2.5. Lấy Token Từ GitHub
+
+1. **Vào repository trên GitHub:**
+   - https://github.com/duowg29/KiemThu
+
+2. **Vào Settings:**
+   - Click tab **"Settings"** (ở trên cùng)
+   - Scroll xuống phần **"Actions"** (bên trái)
+   - Click **"Runners"**
+
+3. **Tạo Runner mới:**
+   - Click nút **"New self-hosted runner"**
+   - Chọn **"Windows"**
+   - Copy **token** được hiển thị (dạng: `AXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`)
+
+### 2.6. Cấu Hình Runner
+
+```powershell
+# Chạy lệnh config (thay YOUR_TOKEN bằng token bạn vừa copy)
+.\config.cmd --url https://github.com/duowg29/KiemThu --token YOUR_TOKEN
+```
+
+**Khi được hỏi:**
+- **Runner name:** Nhấn Enter để dùng tên mặc định, hoặc đặt tên tùy chỉnh (ví dụ: `my-windows-runner`)
+- **Labels:** Nhấn Enter để bỏ qua
+- **Work folder:** Nhấn Enter để dùng mặc định
+
+**Kết quả:** Bạn sẽ thấy dòng "√ Runner successfully added"
+
+### 2.7. Chạy Runner
+
+```powershell
+# Chạy runner
+.\run.cmd
+```
+
+**Lưu ý:** 
+- Runner sẽ chạy và chờ jobs từ GitHub Actions
+- **Giữ cửa sổ PowerShell này mở** - đây là runner đang chạy
+- Để dừng runner, nhấn `Ctrl + C`
+
+### 2.8. (Tùy Chọn) Chạy Runner Như Windows Service
+
+Nếu muốn runner tự động chạy khi khởi động máy:
+
+```powershell
+# Cài đặt như service
+.\svc.cmd install
+
+# Khởi động service
+.\svc.cmd start
+
+# Xem trạng thái
+.\svc.cmd status
+```
+
+**Lưu ý:** Nếu lệnh `svc.cmd` không có, bạn có thể tiếp tục dùng `run.cmd` bình thường.
+
+---
+
+## ⚙️ Bước 3: Cấu Hình Workflow
+
+### 3.1. Kiểm Tra File Workflow
+
+File workflow đã được tạo sẵn tại: `.github/workflows/katalon-tests.yml`
+
+### 3.2. Cập Nhật Đường Dẫn Katalon (Nếu Cần)
+
+1. **Mở file:** `.github/workflows/katalon-tests.yml`
+
+2. **Tìm dòng (khoảng dòng 41):**
+   ```yaml
+   $KATALON_HOME_ORIGINAL = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
+   ```
+
+3. **Sửa nếu đường dẫn Katalon của bạn khác:**
+   ```yaml
+   # Nếu Katalon ở Program Files:
+   $KATALON_HOME_ORIGINAL = "$env:ProgramFiles\Katalon\Katalon Studio"
+   
+   # Hoặc đường dẫn tùy chỉnh:
+   $KATALON_HOME_ORIGINAL = "C:\Path\To\Katalon\Studio"
+   ```
+
+### 3.3. Cập Nhật Test Suite (Nếu Cần)
+
+1. **Tìm dòng (khoảng dòng 107):**
+   ```yaml
+   $testSuitePath = "Test Suites/UI/Login Testcases"
+   ```
+
+2. **Sửa thành test suite bạn muốn chạy:**
+   ```yaml
+   $testSuitePath = "Test Suites/UI/Signup Testcases"
+   # Hoặc
+   $testSuitePath = "Test Suites/Functional/Account Management Testcases"
+   ```
+
+### 3.4. Kiểm Tra Base URL
+
+1. **Kiểm tra file:** `Profiles/default.glbl`
+2. **Đảm bảo URL đúng:**
+   ```xml
+   <value>https://upward-cunning-anteater.ngrok-free.app/CAMNEST/</value>
+   ```
+
+3. **Nếu URL thay đổi, sửa trong workflow (dòng 187):**
+   ```yaml
+   $baseUrl = "https://your-new-url.com/CAMNEST/"
+   ```
+
+### 3.5. Commit và Push
+
+```bash
+git add .github/workflows/katalon-tests.yml
+git commit -m "Update workflow configuration"
+git push
+```
+
+---
+
+## ▶️ Bước 4: Chạy Workflow và Xem Kết Quả
+
+### 4.1. Chạy Workflow Thủ Công
+
+1. **Vào repository trên GitHub:**
+   - https://github.com/duowg29/KiemThu
+
+2. **Vào tab Actions:**
+   - Click tab **"Actions"** (ở trên cùng)
+
+3. **Chọn workflow:**
+   - Click **"Katalon Tests CI/CD"** (bên trái)
+
+4. **Chạy workflow:**
+   - Click nút **"Run workflow"** (bên phải)
+   - Chọn branch (thường là `main`)
+   - Click **"Run workflow"**
+
+### 4.2. Workflow Tự Động Chạy
+
+Workflow sẽ tự động chạy khi:
+- ✅ **Push code** lên repository
+- ✅ **Tạo Pull Request**
+- ✅ **Theo lịch** (đã cấu hình chạy mỗi ngày lúc 2:00 AM UTC)
+
+### 4.3. Xem Workflow Đang Chạy
+
+1. **Vào tab Actions:**
+   - https://github.com/duowg29/KiemThu/actions
+
+2. **Click vào workflow run mới nhất** (có icon màu vàng 🟡 đang chạy)
+
+3. **Xem chi tiết:**
+   - Click vào job **"Run Katalon Studio Tests"**
+   - Xem logs từng step:
+     - ✅ **Checkout code** - Lấy code từ GitHub
+     - 🟡 **Run Katalon Tests** - Đang chạy tests
+     - ⏳ **Upload Test Reports and Logs** - Đang upload reports
+
+### 4.4. Xem Logs Chi Tiết
+
+Trong step **"Run Katalon Tests"**, bạn sẽ thấy:
+- ✅ Đường dẫn Katalon được tìm thấy
+- ✅ Test suite được tìm thấy
+- ✅ Số lượng test cases
+- ✅ Base URL đang dùng
+- ✅ Logs từ Katalon execution
+- ✅ Exit code khi hoàn thành
+
+---
+
+## 📊 Bước 5: Xem và Download Test Reports
+
+### 5.1. Xem Reports Trên GitHub Actions
+
+1. **Sau khi workflow hoàn thành:**
+   - Vào workflow run (màu xanh ✅ nếu thành công, đỏ ❌ nếu failed)
+
+2. **Scroll xuống phần "Artifacts":**
+   - Bạn sẽ thấy **"test-reports"**
+
+3. **Download reports:**
+   - Click **"test-reports"**
+   - File sẽ được download dạng `.zip`
+
+4. **Giải nén và xem:**
+   - Giải nén file `.zip`
+   - Mở file `Reports/test-report.html` trong browser
+   - Xem các file logs nếu cần
+
+### 5.2. Nội Dung Reports
+
+Trong thư mục `test-reports`, bạn sẽ có:
+
+- **`Reports/test-report.html`** - HTML report chính
+- **`Reports/test-report.json`** - JSON report (cho automation)
+- **`Reports/test-summary.txt`** - Text summary
+- **`katalon-output.txt`** - Logs chi tiết từ Katalon
+- **Các file reports khác** (nếu Katalon tạo thêm)
+
+### 5.3. Xem Reports Trực Tiếp Trong Logs
+
+Trong logs của workflow, scroll xuống phần:
+```
+=== Last 100 lines of Katalon Output ===
+```
+
+Bạn sẽ thấy:
+- Test execution logs
+- Test results (Pass/Fail)
+- Screenshots (nếu có)
+- Error messages (nếu có lỗi)
+
+---
+
+## 🔧 Troubleshooting
+
+### Lỗi 1: "Katalon Studio not found"
+
+**Triệu chứng:**
+```
+ERROR: Katalon Studio not found at C:\Users\...
+```
+
+**Giải pháp:**
+1. Kiểm tra đường dẫn Katalon trong workflow
+2. Đảm bảo Katalon đã được cài đặt đúng
+3. Sửa đường dẫn trong `.github/workflows/katalon-tests.yml`
+
+### Lỗi 2: "Test Suite not found"
+
+**Triệu chứng:**
+```
+WARNING: Test suite file not found
+```
+
+**Giải pháp:**
+1. Kiểm tra tên test suite trong workflow
+2. Đảm bảo test suite có tồn tại trong project
+3. Sửa `$testSuitePath` trong workflow
+
+### Lỗi 3: "Package path is too long"
+
+**Triệu chứng:**
+```
+Execution failed: Package path is too long
+```
+
+**Giải pháp:**
+1. **Bật Windows Developer Mode:**
+   - Settings → Privacy & Security → For developers
+   - Bật **Developer Mode**
+   - Restart máy
+
+2. **Hoặc di chuyển Katalon sang đường dẫn ngắn hơn:**
+   - Copy Katalon từ `C:\Users\...` sang `C:\KS\KSE-10.4.2`
+   - Cập nhật đường dẫn trong workflow
+
+### Lỗi 4: "Tests completed too quickly"
+
+**Triệu chứng:**
+```
+WARNING: Test completed too quickly (0.04 seconds)
+```
+
+**Giải pháp:**
+1. Kiểm tra test suite có test cases không
+2. Kiểm tra Katalon có chạy đúng không (xem logs)
+3. Đảm bảo runner đang chạy (`.\run.cmd`)
+
+### Lỗi 5: "No reports found"
+
+**Triệu chứng:**
+```
+No reports found. Creating new report...
+```
+
+**Giải pháp:**
+1. Kiểm tra Katalon có chạy đúng không
+2. Xem logs để tìm lỗi
+3. Đảm bảo `-reportFolder` được set đúng
+
+### Lỗi 6: Katalon mở GUI thay vì chạy console mode
+
+**Triệu chứng:**
+- Katalon Studio GUI mở ra
+- Tests không chạy
+
+**Giải pháp:**
+1. Đảm bảo dùng `katalonc.exe` (console-only version)
+2. Kiểm tra `JAVA_OPTS` và `KATALON_OPTS` được set đúng
+3. Đảm bảo flags `-runMode=console` và `-console` có trong command
+
+### Lỗi 7: Runner không nhận jobs
+
+**Triệu chứng:**
+- Workflow pending mãi không chạy
+
+**Giải pháp:**
+1. Kiểm tra runner có đang chạy không (`.\run.cmd`)
+2. Kiểm tra runner có online trên GitHub không:
+   - Settings → Actions → Runners
+   - Xem runner có status "Online" không
+3. Restart runner nếu cần
+
+---
+
+## 🚀 Các Tính Năng Nâng Cao
+
+### Chạy Nhiều Test Suites
+
+Để chạy nhiều test suites, tạo nhiều jobs trong workflow:
+
+```yaml
+jobs:
+  run-login-tests:
+    runs-on: self-hosted
+    steps:
+      - name: Run Login Tests
+        run: |
+          # Chạy Login Testcases
+          
+  run-signup-tests:
+    runs-on: self-hosted
+    steps:
+      - name: Run Signup Tests
+        run: |
+          # Chạy Signup Testcases
+```
+
+### Chạy Tests Theo Lịch
+
+Workflow đã được cấu hình chạy mỗi ngày lúc 2:00 AM UTC (9:00 AM giờ Việt Nam).
+
+Để thay đổi lịch, sửa trong `.github/workflows/katalon-tests.yml`:
+
+```yaml
+schedule:
+  - cron: '0 2 * * *'  # 2:00 AM UTC mỗi ngày
+  # - cron: '0 9 * * *'  # 9:00 AM UTC mỗi ngày
+  # - cron: '0 */6 * * *'  # Mỗi 6 giờ một lần
+```
+
+### Thay Đổi Browser
+
+Để test trên browser khác, sửa trong workflow:
+
+```yaml
+-browserType="Chrome (headless)"
+# Hoặc
+-browserType="Firefox (headless)"
+-browserType="Edge (headless)"
+```
+
+### Thêm Environment Variables
+
+Để thêm biến môi trường, sửa trong workflow:
+
+```yaml
+env:
+  JAVA_OPTS: '...'
+  KATALON_OPTS: '...'
+  MY_CUSTOM_VAR: 'my-value'
+```
+
+### Chạy Tests Song Song
+
+Để chạy nhiều test suites song song, dùng `matrix`:
+
+```yaml
+strategy:
+  matrix:
+    test-suite: 
+      - "Test Suites/UI/Login Testcases"
+      - "Test Suites/UI/Signup Testcases"
+```
+
+---
+
+## 📝 Tóm Tắt
+
+### Checklist Setup:
+
+- [ ] ✅ Cài đặt Katalon Studio
+- [ ] ✅ Download và cấu hình Self-Hosted Runner
+- [ ] ✅ Chạy runner (`.\run.cmd`)
+- [ ] ✅ Kiểm tra workflow configuration
+- [ ] ✅ Chạy workflow lần đầu
+- [ ] ✅ Xem và download reports
+
+### Các Lệnh Quan Trọng:
+
+```powershell
+# Chạy runner
+.\run.cmd
+
+# Dừng runner
+Ctrl + C
+
+# Xem status runner (nếu dùng service)
+.\svc.cmd status
+
+# Restart runner
+.\svc.cmd restart
+```
+
+### Liên Kết Hữu Ích:
+
+- **GitHub Actions:** https://github.com/duowg29/KiemThu/actions
+- **Runner Settings:** https://github.com/duowg29/KiemThu/settings/actions/runners
+- **Workflow File:** `.github/workflows/katalon-tests.yml`
+
+---
+
+## 🎉 Chúc Mừng!
+
+Bạn đã hoàn thành setup Self-Hosted Runner cho GitHub Actions với Katalon Studio!
+
+Nếu có vấn đề, xem phần **Troubleshooting** hoặc kiểm tra logs trong GitHub Actions.
+
+---
+
+**Cập nhật lần cuối:** 13/12/2025
+

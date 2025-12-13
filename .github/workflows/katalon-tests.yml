@@ -209,51 +209,51 @@ jobs:
         Write-Host "=========================================="
         
         try {
-          # Chạy Katalon với tất cả flags cần thiết để force console mode
-          # -g_baseUrl sẽ override giá trị trong profile nếu cần
-          $process = Start-Process -FilePath $katalonExe `
-            -ArgumentList @(
-              "-runMode=console",
-              "-console",
-              "-projectPath=$projectPathFormatted",
-              "-retry=0",
-              "-testSuitePath=$testSuitePathFormatted",
-              "-executionProfile=default",
-              "-browserType=Chrome (headless)",
-              "-apiKey=",
-              "-g_username=",
-              "-g_password=",
-              "-g_baseUrl=$baseUrl",
-              "-reportFolder=$reportFolderFormatted"
-            ) `
-            -NoNewWindow `
-            -PassThru `
-            -RedirectStandardOutput "katalon-stdout.txt" `
-            -RedirectStandardError "katalon-stderr.txt" `
-            -Wait
+          # Chạy Katalon trực tiếp với & operator để tránh mở GUI
+          Write-Host "Executing Katalon in console mode (no GUI)..."
+          Write-Host "=========================================="
           
-          $exitCode = $process.ExitCode
+          # Đảm bảo environment variables được set trước khi chạy
+          $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true -Dswt.autoKey=false'
+          $env:KATALON_OPTS = '-noSplash -noExit -consoleLog'
           
-          Write-Host "Process exited with code: $exitCode"
+          # Chạy Katalon trực tiếp với & operator và capture output
+          # Redirect cả stdout và stderr
+          & $katalonExe `
+            -runMode=console `
+            -console `
+            -noSplash `
+            -projectPath="$projectPathFormatted" `
+            -retry=0 `
+            -testSuitePath="$testSuitePathFormatted" `
+            -executionProfile=default `
+            -browserType="Chrome (headless)" `
+            -apiKey="" `
+            -g_username="" `
+            -g_password="" `
+            -g_baseUrl="$baseUrl" `
+            -reportFolder="$reportFolderFormatted" `
+            *>&1 | Tee-Object -FilePath "katalon-output.txt"
           
-          # Hiển thị output
-          if (Test-Path "katalon-stdout.txt") {
-            Write-Host "=== Katalon Output (stdout) ==="
-            $stdout = Get-Content "katalon-stdout.txt" -Tail 100
-            $stdout | ForEach-Object { Write-Host $_ }
-          }
-          
-          if (Test-Path "katalon-stderr.txt") {
-            $stderr = Get-Content "katalon-stderr.txt"
-            if ($stderr.Count -gt 0) {
-              Write-Host "=== Katalon Output (stderr) ==="
-              $stderr | ForEach-Object { Write-Host $_ }
-            }
-          }
+          # Lấy exit code
+          $exitCode = $LASTEXITCODE
           
           if ($null -eq $exitCode) {
             $exitCode = 0
           }
+          
+          Write-Host "=========================================="
+          Write-Host "Katalon process completed with exit code: $exitCode"
+          
+          # Đọc và hiển thị output
+          if (Test-Path "katalon-output.txt") {
+            Write-Host "=== Last 100 lines of Katalon Output ==="
+            $outputLines = Get-Content "katalon-output.txt" -Tail 100 -ErrorAction SilentlyContinue
+            if ($outputLines) {
+              $outputLines | ForEach-Object { Write-Host $_ }
+            }
+          }
+          
         } catch {
           Write-Host "Error executing Katalon: $($_.Exception.Message)"
           Write-Host "Stack trace: $($_.Exception.StackTrace)"
