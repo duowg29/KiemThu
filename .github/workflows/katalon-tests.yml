@@ -6,6 +6,17 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:  # Cho phép chạy thủ công
+  schedule:
+    # Chạy mỗi ngày lúc 2:00 AM UTC (9:00 AM giờ Việt Nam)
+    # Format: minute hour day-of-month month day-of-week
+    # Để chạy 1 ngày 1 lần, uncomment dòng dưới:
+    - cron: '0 2 * * *'  # 2:00 AM UTC mỗi ngày
+    
+    # Các ví dụ khác:
+    # - cron: '0 9 * * *'  # 9:00 AM UTC mỗi ngày (4:00 PM giờ Việt Nam)
+    # - cron: '0 0 * * *'  # Nửa đêm UTC mỗi ngày (7:00 AM giờ Việt Nam)
+    # - cron: '0 14 * * 1-5'  # 2:00 PM UTC từ thứ 2 đến thứ 6 (9:00 PM giờ Việt Nam)
+    # - cron: '0 */6 * * *'  # Mỗi 6 giờ một lần
 
 jobs:
   run-katalon-tests:

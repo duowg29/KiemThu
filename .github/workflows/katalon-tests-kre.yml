@@ -6,6 +6,17 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+  schedule:
+    # Chạy mỗi ngày lúc 2:00 AM UTC (9:00 AM giờ Việt Nam)
+    # Format: minute hour day-of-month month day-of-week
+    # Để chạy 1 ngày 1 lần, uncomment dòng dưới:
+    - cron: '0 2 * * *'  # 2:00 AM UTC mỗi ngày
+    
+    # Các ví dụ khác:
+    # - cron: '0 9 * * *'  # 9:00 AM UTC mỗi ngày (4:00 PM giờ Việt Nam)
+    # - cron: '0 0 * * *'  # Nửa đêm UTC mỗi ngày (7:00 AM giờ Việt Nam)
+    # - cron: '0 14 * * 1-5'  # 2:00 PM UTC từ thứ 2 đến thứ 6 (9:00 PM giờ Việt Nam)
+    # - cron: '0 */6 * * *'  # Mỗi 6 giờ một lần
 
 jobs:
   run-katalon-tests:
@@ -25,12 +36,42 @@ jobs:
     - name: Download Katalon Runtime Engine
       id: download-kre
       run: |
-        $KRE_VERSION = "9.3.0"
-        $KRE_URL = "https://github.com/katalon-studio/katalon-studio/releases/download/v$KRE_VERSION/katalon-runtime-engine-$KRE_VERSION-windows-x64.zip"
+        # Sử dụng KRE version 8.3.5 (version ổn định và có sẵn)
+        $KRE_VERSION = "8.3.5"
         $KRE_ZIP = "kre.zip"
         
-        Write-Host "Downloading Katalon Runtime Engine version $KRE_VERSION..."
-        Invoke-WebRequest -Uri $KRE_URL -OutFile $KRE_ZIP
+        # Danh sách URLs để thử (theo thứ tự ưu tiên)
+        $URLs = @(
+          "https://github.com/katalon-studio/katalon-studio/releases/download/v$KRE_VERSION/katalon-runtime-engine-$KRE_VERSION-windows-x64.zip",
+          "https://download.katalon.com/$KRE_VERSION/katalon-runtime-engine-$KRE_VERSION-windows-x64.zip"
+        )
+        
+        $downloadSuccess = $false
+        
+        foreach ($url in $URLs) {
+          try {
+            Write-Host "Trying to download from: $url"
+            Invoke-WebRequest -Uri $url -OutFile $KRE_ZIP -ErrorAction Stop
+            Write-Host "Download successful from: $url"
+            $downloadSuccess = $true
+            break
+          } catch {
+            Write-Host "Failed to download from: $url"
+            Write-Host "Error: $($_.Exception.Message)"
+            if (Test-Path $KRE_ZIP) {
+              Remove-Item $KRE_ZIP
+            }
+          }
+        }
+        
+        if (-not $downloadSuccess) {
+          Write-Host "ERROR: Failed to download KRE from all sources!"
+          Write-Host "Please check:"
+          Write-Host "1. KRE version $KRE_VERSION exists"
+          Write-Host "2. Internet connection"
+          Write-Host "3. GitHub releases: https://github.com/katalon-studio/katalon-studio/releases"
+          exit 1
+        }
         
         Write-Host "Extracting KRE..."
         Expand-Archive -Path $KRE_ZIP -DestinationPath . -Force
@@ -44,7 +85,7 @@ jobs:
       env:
         JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.execution.report.enabled=false -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
       run: |
-        $KRE_VERSION = "9.3.0"
+        $KRE_VERSION = "8.3.5"
         $KRE_PATH = ".\katalon-runtime-engine-$KRE_VERSION-windows-x64\katalonc.exe"
         
         if (-not (Test-Path $KRE_PATH)) {
