@@ -247,8 +247,9 @@ jobs:
           
           # Đọc và hiển thị output từ stdout
           if (Test-Path "katalon-stdout.txt") {
-            Write-Host "=== Katalon Standard Output (Last 200 lines) ==="
-            $stdoutLines = Get-Content "katalon-stdout.txt" -Tail 200 -ErrorAction SilentlyContinue
+            $stdoutSize = (Get-Item "katalon-stdout.txt").Length
+            Write-Host "=== Katalon Standard Output (File size: $stdoutSize bytes, Last 300 lines) ==="
+            $stdoutLines = Get-Content "katalon-stdout.txt" -Tail 300 -ErrorAction SilentlyContinue
             if ($stdoutLines) {
               $stdoutLines | ForEach-Object { Write-Host $_ }
             } else {
@@ -258,10 +259,11 @@ jobs:
             Write-Host "WARNING: katalon-stdout.txt not found"
           }
           
-          # Đọc và hiển thị output từ stderr
+          # Đọc và hiển thị output từ stderr (quan trọng để debug)
           if (Test-Path "katalon-stderr.txt") {
-            Write-Host "=== Katalon Standard Error (Last 200 lines) ==="
-            $stderrLines = Get-Content "katalon-stderr.txt" -Tail 200 -ErrorAction SilentlyContinue
+            $stderrSize = (Get-Item "katalon-stderr.txt").Length
+            Write-Host "=== Katalon Standard Error (File size: $stderrSize bytes, Last 300 lines) ==="
+            $stderrLines = Get-Content "katalon-stderr.txt" -Tail 300 -ErrorAction SilentlyContinue
             if ($stderrLines) {
               $stderrLines | ForEach-Object { Write-Host $_ }
             } else {
@@ -269,6 +271,21 @@ jobs:
             }
           } else {
             Write-Host "WARNING: katalon-stderr.txt not found"
+          }
+          
+          # Kiểm tra xem có lỗi license/authentication không
+          if (Test-Path "katalon-stdout.txt") {
+            $stdoutContent = Get-Content "katalon-stdout.txt" -Raw -ErrorAction SilentlyContinue
+            if ($stdoutContent) {
+              if ($stdoutContent -like "*license*" -or $stdoutContent -like "*License*" -or $stdoutContent -like "*authentication*" -or $stdoutContent -like "*login*") {
+                Write-Host "⚠ WARNING: Possible license/authentication issue detected in output"
+                Write-Host "Katalon Studio FREE version can run in CI/CD, but you may need to:"
+                Write-Host "1. Open Katalon Studio GUI on the runner machine at least once"
+                Write-Host "2. Login with your Katalon account"
+                Write-Host "3. Activate the free license"
+                Write-Host "4. Then the console mode should work"
+              }
+            }
           }
           
         } catch {
