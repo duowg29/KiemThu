@@ -21,11 +21,21 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fa-solid fa-magnifying-glass search'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fa-solid fa-magnifying-glass search (3)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Contact_searchInput'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/a (32)'))
 
-WebUI.takeScreenshotAsCheckpoint('button_search')
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search (1)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/a (3)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (3)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a (3)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Lens/i_Contact_fa-solid fa-magnifying-glass search'))
+
+WebUI.takeScreenshotAsCheckpoint('T12')
 
 WebUI.closeBrowser()
 

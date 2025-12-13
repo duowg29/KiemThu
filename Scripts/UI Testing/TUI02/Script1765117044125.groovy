@@ -21,13 +21,15 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (1)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (137)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Contact_txt'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (118)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (118)'))
 
-WebUI.takeScreenshotAsCheckpoint('popup_login_input')
+WebUI.click(findTestObject('Object Repository/Page_CamNest/form (4)'))
+
+WebUI.takeScreenshotAsCheckpoint('TUI02')
 
 WebUI.closeBrowser()
 

@@ -21,20 +21,18 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (22)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/a (31)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (2)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (5)'))
 
-WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (2)'), 'Canon', true)
+WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (5)'), 'Canon', true)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price (1)'))
-
-WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price (1)'), '20m-40m', 
+WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price (2)'), '20m-40m', 
     true)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn (2)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn (5)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (4)'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (5)'))
 
 WebUI.takeScreenshotAsCheckpoint('T10-02')
 

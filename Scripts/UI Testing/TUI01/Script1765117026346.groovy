@@ -21,11 +21,11 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl(GlobalVariable.baseUrl)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (136)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/form'))
+WebUI.click(findTestObject('Object Repository/Page_CamNest/form (3)'))
 
-WebUI.takeScreenshotAsCheckpoint('popup_login')
+WebUI.takeScreenshotAsCheckpoint('TUI01')
 
 WebUI.closeBrowser()
 
