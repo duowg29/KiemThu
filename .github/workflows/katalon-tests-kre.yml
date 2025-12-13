@@ -56,7 +56,7 @@ jobs:
         & $KRE_PATH -runMode=console `
           -projectPath="$PWD" `
           -retry=0 `
-          -testSuitePath="Test Suites/Functional/Login Testcases" `
+          -testSuitePath="Test Suites/Functional/Account Management Testcases" `
           -executionProfile="default" `
           -browserType="Chrome (headless)" `
           -apiKey="" `
