@@ -1,0 +1,78 @@
+name: Katalon Tests with KRE
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  run-katalon-tests:
+    name: Run Katalon Tests with KRE
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        
+    - name: Download Katalon Runtime Engine
+      id: download-kre
+      run: |
+        $KRE_VERSION = "9.3.0"
+        $KRE_URL = "https://github.com/katalon-studio/katalon-studio/releases/download/v$KRE_VERSION/katalon-runtime-engine-$KRE_VERSION-windows-x64.zip"
+        $KRE_ZIP = "kre.zip"
+        
+        Write-Host "Downloading Katalon Runtime Engine version $KRE_VERSION..."
+        Invoke-WebRequest -Uri $KRE_URL -OutFile $KRE_ZIP
+        
+        Write-Host "Extracting KRE..."
+        Expand-Archive -Path $KRE_ZIP -DestinationPath . -Force
+        Remove-Item $KRE_ZIP
+        
+        # Set output để dùng ở step sau
+        echo "KRE_VERSION=$KRE_VERSION" >> $env:GITHUB_OUTPUT
+        
+    - name: Run Katalon Tests
+      timeout-minutes: 30
+      env:
+        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.execution.report.enabled=false -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+      run: |
+        $KRE_VERSION = "9.3.0"
+        $KRE_PATH = ".\katalon-runtime-engine-$KRE_VERSION-windows-x64\katalonc.exe"
+        
+        if (-not (Test-Path $KRE_PATH)) {
+          Write-Host "KRE not found. Please check version and download URL."
+          exit 1
+        }
+        
+        Write-Host "Running Katalon tests with KRE..."
+        & $KRE_PATH -runMode=console `
+          -projectPath="$PWD" `
+          -retry=0 `
+          -testSuitePath="Test Suites/Functional/Login Testcases" `
+          -executionProfile="default" `
+          -browserType="Chrome (headless)" `
+          -apiKey="" `
+          -g_username="" `
+          -g_password=""
+          
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Tests failed with exit code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
+          
+    - name: Upload Test Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: Reports/**
+        retention-days: 30
+
