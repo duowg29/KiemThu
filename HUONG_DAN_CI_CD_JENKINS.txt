@@ -186,9 +186,56 @@ BƯỚC 4: KẾT NỐI JENKINS VỚI GITHUB
 5. Active: bật
 6. Add webhook
 
+4.4. Sử dụng ngrok để expose Jenkins (cho webhook)
+---------------------------------------------------
+LƯU Ý QUAN TRỌNG VỀ NGROK:
+- Ngrok chỉ có thể forward 1 port tại một thời điểm với 1 domain
+- Nếu bạn dùng ngrok cho Jenkins (port 8080), bạn KHÔNG THỂ dùng cùng domain 
+  cho website CAMNEST hoặc service khác
+- Giải pháp: Dùng nhiều ngrok tunnels hoặc chỉ dùng ngrok khi cần webhook
+
+CÁCH 1: Dùng ngrok với domain có sẵn (khuyến nghị)
+1. Tải và cài ngrok: https://ngrok.com/download
+2. Đăng ký tài khoản ngrok (miễn phí) để có domain cố định
+3. Lấy authtoken từ: https://dashboard.ngrok.com/get-started/your-authtoken
+4. Cấu hình ngrok:
+   - Mở PowerShell, chạy: ngrok config add-authtoken [YOUR_AUTHTOKEN]
+5. Chạy ngrok cho Jenkins:
+   - Mở PowerShell, chạy: ngrok http 8080 --domain=upward-cunning-anteater.ngrok-free.app
+   - Giữ cửa sổ PowerShell mở (đừng tắt)
+6. Test: truy cập https://upward-cunning-anteater.ngrok-free.app → phải thấy Jenkins
+7. Cấu hình webhook:
+   - Payload URL: https://upward-cunning-anteater.ngrok-free.app/github-webhook/
+   - Lưu ý: Dùng https:// và có /github-webhook/ ở cuối
+
+CÁCH 2: Dùng nhiều ngrok tunnels (nếu cần cả Jenkins và website)
+1. Tạo file cấu hình ngrok: ngrok.yml
+   - Vị trí: C:\Users\[TênUser]\.ngrok2\ngrok.yml (hoặc C:\ngrok\ngrok.yml)
+2. Nội dung file:
+   version: "2"
+   authtoken: [YOUR_AUTHTOKEN]
+   tunnels:
+     jenkins:
+       proto: http
+       addr: 8080
+       domain: upward-cunning-anteater.ngrok-free.app
+     camnest:
+       proto: http
+       addr: [PORT_CAMNEST]  # Thay bằng port website CAMNEST của bạn
+       domain: [DOMAIN_KHAC]  # Cần domain khác hoặc dùng random domain
+3. Chạy: ngrok start --all
+   - Sẽ chạy cả Jenkins và CAMNEST cùng lúc
+
+CÁCH 3: Chỉ dùng ngrok khi cần (khuyến nghị cho development)
+- Không chạy ngrok liên tục
+- Chỉ chạy ngrok khi cần test webhook
+- Dùng Poll SCM thay vì webhook cho development thường ngày
+- Khi cần test webhook, mới chạy ngrok tạm thời
+
 Lưu ý: Nếu Jenkins ở localhost, GitHub không thể gọi webhook. Có thể:
-- Dùng ngrok để expose localhost
+- Dùng ngrok để expose localhost (như trên)
 - Hoặc chạy Jenkins trên server có IP public
+- Hoặc dùng Poll SCM (không cần webhook)
 - Hoặc trigger thủ công trong Jenkins
 
 
@@ -227,7 +274,120 @@ BƯỚC 5: TẠO PIPELINE JOB TRONG JENKINS
 
 
 ================================================================================
-BƯỚC 6: KIỂM TRA VÀ DEBUG
+BƯỚC 6: WORKFLOW CI/CD VÀ CÁCH SỬ DỤNG JENKINS
+================================================================================
+
+6.1. Quy trình CI/CD hoạt động như thế nào
+------------------------------------------
+1. Developer push code lên GitHub
+2. GitHub gửi webhook đến Jenkins (hoặc Jenkins tự poll)
+3. Jenkins tự động:
+   - Checkout code mới từ GitHub
+   - Chạy Katalon tests
+   - Archive test reports
+4. Jenkins hiển thị kết quả (pass/fail)
+5. Developer xem kết quả và fix lỗi nếu có
+
+6.2. Các cách trigger Pipeline
+------------------------------
+CÁCH 1: GitHub Webhook (tự động ngay lập tức)
+- Khi push code → GitHub gửi webhook → Jenkins chạy ngay
+- Ưu điểm: Nhanh, tự động
+- Nhược điểm: Cần ngrok hoặc IP public
+- Cách setup: Xem bước 4.3 và 4.4
+
+CÁCH 2: Poll SCM (tự động theo lịch) - KHUYẾN NGHỊ
+- Jenkins tự kiểm tra GitHub theo lịch (ví dụ: mỗi 5 phút)
+- Ưu điểm: 
+  * Không cần ngrok
+  * Không cần webhook trong GitHub
+  * Đơn giản, ổn định
+  * Jenkins tự kết nối đến GitHub (outbound)
+- Nhược điểm: Có độ trễ (tối đa 5 phút)
+- Cách setup:
+  1. Vào job → Configure → Build Triggers
+  2. Chọn "Poll SCM" (BỎ CHỌN "GitHub hook trigger" nếu có)
+  3. Schedule: H/5 * * * * (mỗi 5 phút)
+     - Hoặc */5 * * * * (mỗi 5 phút chính xác)
+     - Hoặc H * * * * (mỗi giờ)
+  4. Save
+- Lưu ý:
+  * KHÔNG CẦN webhook trong GitHub (có thể xóa hoặc để đó)
+  * KHÔNG CẦN ngrok
+  * Jenkins tự kết nối đến GitHub, không cần GitHub gửi webhook về
+
+CÁCH 3: Build Now (thủ công)
+- Click "Build Now" trong Jenkins khi muốn chạy
+- Ưu điểm: Kiểm soát hoàn toàn
+- Nhược điểm: Phải nhớ chạy thủ công
+- Cách dùng: Vào job → Build Now
+
+6.3. So sánh Poll SCM vs Webhook
+--------------------------------
+POLL SCM:
+- Cách hoạt động: Jenkins tự kết nối đến GitHub (outbound)
+- Cần webhook: ❌ KHÔNG
+- Cần ngrok: ❌ KHÔNG
+- Tốc độ: Có độ trễ (tối đa 5 phút)
+- Độ phức tạp: ⭐ Đơn giản
+- Khuyến nghị: ✅ Development, testing
+
+WEBHOOK:
+- Cách hoạt động: GitHub gửi webhook đến Jenkins (inbound)
+- Cần webhook: ✅ CÓ (phải setup trong GitHub)
+- Cần ngrok: ✅ CÓ (nếu Jenkins ở localhost)
+- Tốc độ: Ngay lập tức (0 giây)
+- Độ phức tạp: ⭐⭐ Phức tạp hơn (cần ngrok)
+- Khuyến nghị: ✅ Production, cần phản hồi ngay
+
+KẾT LUẬN:
+- Dùng Poll SCM: Xóa webhook, tắt ngrok → Đơn giản, ổn định
+- Dùng Webhook: Cần webhook, cần ngrok → Nhanh nhưng phức tạp hơn
+
+6.4. Khi nào cần dùng ngrok?
+----------------------------
+CHỈ DÙNG NGROK KHI:
+- Dùng Webhook (GitHub cần gửi đến Jenkins)
+- Cần Jenkins accessible từ internet
+- Demo/showcase cho người khác xem
+
+KHÔNG CẦN NGROK KHI:
+- Dùng Poll SCM (Jenkins tự check GitHub - outbound)
+- Dùng Build Now (trigger thủ công)
+- Jenkins chỉ dùng trong mạng nội bộ
+- Development thường ngày
+
+6.5. Quản lý ngrok và website CAMNEST
+-------------------------------------
+VẤN ĐỀ: Ngrok chỉ forward 1 port tại một thời điểm với 1 domain
+
+GIẢI PHÁP 1: Dùng ngrok cho từng service riêng biệt
+- Chạy ngrok cho Jenkins: ngrok http 8080 --domain=upward-cunning-anteater.ngrok-free.app
+- Chạy ngrok cho CAMNEST: ngrok http [PORT_CAMNEST] --domain=[DOMAIN_KHAC]
+- Lưu ý: Cần nhiều domain hoặc dùng random domain cho service thứ 2
+
+GIẢI PHÁP 2: Chỉ dùng ngrok khi cần
+- Development thường ngày: Dùng Poll SCM, không cần ngrok
+- Khi cần test webhook: Chạy ngrok tạm thời cho Jenkins
+- Website CAMNEST: Dùng ngrok riêng khi cần expose
+
+GIẢI PHÁP 3: Dùng ngrok config file (nhiều tunnels)
+- Tạo file ngrok.yml với nhiều tunnels
+- Chạy: ngrok start --all
+- Xem hướng dẫn chi tiết ở bước 4.4
+
+6.6. Best Practices
+--------------------
+1. Development: Dùng Poll SCM (không cần ngrok)
+2. Testing webhook: Chạy ngrok tạm thời
+3. Production: Deploy Jenkins lên server có IP public
+4. Website riêng: Dùng ngrok riêng hoặc deploy riêng
+5. Giữ ngrok chạy: Chỉ khi thực sự cần webhook
+6. Code đã push: Dùng Poll SCM để Jenkins tự phát hiện
+
+
+================================================================================
+BƯỚC 7: KIỂM TRA VÀ DEBUG
 ================================================================================
 
 6.1. Kiểm tra kết quả
@@ -237,30 +397,73 @@ BƯỚC 6: KIỂM TRA VÀ DEBUG
 3. Test Results: xem kết quả test (nếu có plugin)
 4. Workspace: xem files trong workspace
 
-6.2. Xử lý lỗi thường gặp
+7.2. Xử lý lỗi thường gặp
 -------------------------
 
-Lỗi: "katalon.exe not found"
-→ Giải pháp: kiểm tra đường dẫn trong Jenkinsfile
+Lỗi: "unexpected char: '\'" hoặc "MultipleCompilationErrorsException"
+→ Nguyên nhân: Backslash trong đường dẫn Windows không được escape
+→ Giải pháp: 
+   - Trong Jenkinsfile, dùng \\ thay vì \ trong đường dẫn
+   - Ví dụ: "C:\\Users\\...\\katalon.exe" thay vì "C:\Users\...\katalon.exe"
+   - Hoặc dùng forward slash: "C:/Users/.../katalon.exe"
 
-Lỗi: "Git not found"
-→ Giải pháp: cấu hình Git path trong Jenkins
+Lỗi: "katalon.exe not found" hoặc "The system cannot find the path specified"
+→ Nguyên nhân: Đường dẫn Katalon trong Jenkinsfile không đúng
+→ Giải pháp: 
+   1. Tìm đường dẫn Katalon trên máy (xem bước 2.2)
+   2. Sửa đường dẫn trong Jenkinsfile cho đúng
+   3. Nhớ escape backslash: \\ hoặc dùng forward slash: /
+
+Lỗi: "Git not found" hoặc "git: command not found"
+→ Nguyên nhân: Jenkins chưa cấu hình đường dẫn Git
+→ Giải pháp: 
+   1. Vào Manage Jenkins → Configure System
+   2. Tìm "Git" → điền Git executable: C:\Program Files\Git\bin\git.exe
+   3. Save
+
+Lỗi: "Repository not found" hoặc "Authentication failed"
+→ Nguyên nhân: URL repo sai hoặc repo private nhưng chưa có credentials
+→ Giải pháp: 
+   1. Kiểm tra URL repo trong cấu hình job
+   2. Nếu repo private, thêm credentials (xem bước 4.2)
+
+Lỗi: "Branch not found" hoặc "Couldn't find any revision"
+→ Nguyên nhân: Branch không đúng (có thể là master thay vì main)
+→ Giải pháp: 
+   1. Kiểm tra branch chính của repo trên GitHub
+   2. Sửa trong cấu hình job: Branch → */master hoặc */main
+
+Lỗi: "Jenkinsfile not found"
+→ Nguyên nhân: File Jenkinsfile chưa có trong repo GitHub
+→ Giải pháp: 
+   1. Đảm bảo file Jenkinsfile đã có trong thư mục gốc của repo
+   2. Đã commit và push lên GitHub
 
 Lỗi: "Permission denied"
-→ Giải pháp: chạy Jenkins với quyền admin hoặc cấp quyền cho thư mục
+→ Nguyên nhân: Jenkins không có quyền truy cập thư mục/file
+→ Giải pháp: 
+   1. Chạy Jenkins với quyền admin
+   2. Hoặc cấp quyền đọc/ghi cho thư mục project
 
 Lỗi: "Headless browser failed"
-→ Giải pháp: thử -browserType="Chrome" thay vì headless
+→ Nguyên nhân: Browser headless không hoạt động
+→ Giải pháp: 
+   1. Thử -browserType="Chrome" thay vì "Chrome (headless)"
+   2. Hoặc cài đặt ChromeDriver đúng version
 
-Lỗi: "Webhook không hoạt động"
-→ Giải pháp: dùng Poll SCM hoặc trigger thủ công
+Lỗi: "Webhook không hoạt động" hoặc "failed to connect to host"
+→ Nguyên nhân: GitHub không thể kết nối đến Jenkins (localhost/IP private)
+→ Giải pháp: 
+   1. Dùng Poll SCM thay vì webhook (khuyến nghị)
+   2. Hoặc dùng ngrok để expose Jenkins (xem bước 4.4)
+   3. Hoặc trigger thủ công bằng Build Now
 
 
 ================================================================================
-BƯỚC 7: TỐI ƯU HÓA (TÙY CHỌN)
+BƯỚC 8: TỐI ƯU HÓA (TÙY CHỌN)
 ================================================================================
 
-7.1. Chạy nhiều test suites
+8.1. Chạy nhiều test suites
 ----------------------------
 Chỉnh Jenkinsfile để chạy nhiều test suites:
 
@@ -284,7 +487,7 @@ stage('Run Multiple Test Suites') {
     }
 }
 
-7.2. Gửi email khi test fail
+8.2. Gửi email khi test fail
 -----------------------------
 1. Cài plugin "Email Extension"
 2. Thêm vào Jenkinsfile:
@@ -299,7 +502,7 @@ post {
     }
 }
 
-7.3. Hiển thị test results
+8.3. Hiển thị test results
 ---------------------------
 1. Cài plugin "HTML Publisher" hoặc "Test Results Analyzer"
 2. Thêm vào Jenkinsfile để publish HTML reports
@@ -328,10 +531,34 @@ TÓM TẮT CHECKLIST
 LƯU Ý QUAN TRỌNG
 ================================================================================
 
-1. Đường dẫn Windows: dùng \\ hoặc / trong Jenkinsfile
-2. Quyền truy cập: Jenkins cần quyền đọc/ghi project
-3. Browser drivers: đảm bảo ChromeDriver/GeckoDriver có sẵn
-4. Test data: nếu dùng data files, đảm bảo chúng có trong repo
+1. Đường dẫn Windows trong Jenkinsfile:
+   - Phải escape backslash: dùng \\ thay vì \
+   - Hoặc dùng forward slash: / (Windows vẫn hiểu được)
+   - Ví dụ: "C:\\Users\\...\\katalon.exe" hoặc "C:/Users/.../katalon.exe"
+
+2. Ngrok và nhiều services:
+   - Ngrok chỉ forward 1 port tại một thời điểm với 1 domain
+   - Nếu dùng ngrok cho Jenkins, KHÔNG THỂ dùng cùng domain cho website CAMNEST
+   - Giải pháp: Dùng Poll SCM thay vì webhook (không cần ngrok)
+   - Hoặc dùng nhiều ngrok tunnels với nhiều domain
+   - Xem chi tiết ở bước 4.4 và 6.4
+
+3. Quyền truy cập:
+   - Jenkins cần quyền đọc/ghi project
+   - Chạy Jenkins với quyền admin nếu cần
+
+4. Browser drivers:
+   - Đảm bảo ChromeDriver/GeckoDriver có sẵn
+   - Hoặc dùng browser có sẵn trong hệ thống
+
+5. Test data:
+   - Nếu dùng data files, đảm bảo chúng có trong repo
+   - Hoặc cấu hình đường dẫn đúng trong Jenkinsfile
+
+6. Workflow thực tế:
+   - Development: Dùng Poll SCM (không cần ngrok)
+   - Testing webhook: Chạy ngrok tạm thời
+   - Production: Deploy Jenkins lên server có IP public
 
 
 ================================================================================

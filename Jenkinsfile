@@ -13,6 +13,7 @@ pipeline {
         stage('Run Katalon Tests') {
             steps {
                 echo 'Running Katalon Studio tests...'
+                timeout(time: 30, unit: 'MINUTES') {
                 bat '''
                     "C:\\Users\\feu29\\.katalon\\packages\\KSE-10.4.2\\katalon.exe" -runMode=console ^
                     -projectPath="%WORKSPACE%" ^
@@ -24,6 +25,7 @@ pipeline {
                     -g_username="" ^
                     -g_password=""
                 '''
+                }
             }
         }
         
