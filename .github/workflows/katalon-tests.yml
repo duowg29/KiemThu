@@ -105,7 +105,7 @@ jobs:
         Write-Host "Note: Project path is automatically set to workspace directory where runner checkout code"
         
         # Dùng test suite cụ thể thay vì collection (collection có thể không chạy được trong console mode)
-        $testSuitePath = "Test Suites/UI/Login Testcases"
+        $testSuitePath = "Test Suites/UI/Navigation Testcases"
         
         # Kiểm tra test suite có tồn tại không
         if (-not (Test-Path "$PWD\$testSuitePath.ts")) {
