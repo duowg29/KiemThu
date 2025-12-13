@@ -87,31 +87,44 @@ jobs:
         }
         
         Write-Host "Starting Katalon execution..."
-        Write-Host "Command: $KATALON_HOME\katalon.exe -runMode=console -projectPath=`"$PWD`" -testSuitePath=`"$testSuitePath`" -executionProfile=`"default`" -browserType=`"Chrome (headless)`" -reportFolder=`"$PWD\Reports`""
         $startTime = Get-Date
         
-        # Chạy Katalon trực tiếp với & operator (không dùng Start-Process để tránh treo)
+        # Đảm bảo thư mục Reports tồn tại
+        if (-not (Test-Path "Reports")) {
+          New-Item -ItemType Directory -Path "Reports" -Force | Out-Null
+        }
+        
+        # Chạy Katalon với format path đúng (dùng forward slash cho test suite path)
         Write-Host "Executing Katalon..."
         Write-Host "This may take several minutes. Please wait..."
+        Write-Host "Project: $PWD"
+        Write-Host "Test Suite: $testSuitePath"
         
-        try {
-          # Chạy Katalon và capture output
-          & "$KATALON_HOME\katalon.exe" -runMode=console `
-            -projectPath="$PWD" `
-            -retry=0 `
-            -testSuitePath="$testSuitePath" `
-            -executionProfile="default" `
-            -browserType="Chrome (headless)" `
-            -apiKey="" `
-            -g_username="" `
-            -g_password="" `
-            -reportFolder="$PWD\Reports" `
-            2>&1 | Tee-Object -FilePath "katalon-output.txt"
-          
-          $exitCode = $LASTEXITCODE
-        } catch {
-          Write-Host "Error executing Katalon: $($_.Exception.Message)"
+        # Chuyển đổi path sang format Katalon yêu cầu (forward slash)
+        $testSuitePathFormatted = $testSuitePath -replace '\\', '/'
+        $projectPathFormatted = $PWD -replace '\\', '/'
+        $reportFolderFormatted = "$PWD\Reports" -replace '\\', '/'
+        
+        Write-Host "Formatted Test Suite Path: $testSuitePathFormatted"
+        
+        # Chạy Katalon và đợi hoàn thành
+        $katalonProcess = Start-Process -FilePath "$KATALON_HOME\katalon.exe" `
+          -ArgumentList "-runMode=console", "-projectPath=$projectPathFormatted", "-retry=0", "-testSuitePath=$testSuitePathFormatted", "-executionProfile=default", "-browserType=Chrome (headless)", "-apiKey=", "-g_username=", "-g_password=", "-reportFolder=$reportFolderFormatted" `
+          -NoNewWindow -PassThru -RedirectStandardOutput "katalon-stdout.txt" -RedirectStandardError "katalon-stderr.txt"
+        
+        Write-Host "Katalon process started. PID: $($katalonProcess.Id)"
+        Write-Host "Waiting for process to complete..."
+        
+        # Đợi process hoàn thành với timeout
+        $timeout = 30 * 60 * 1000  # 30 phút
+        $katalonProcess.WaitForExit($timeout)
+        
+        if (-not $katalonProcess.HasExited) {
+          Write-Host "WARNING: Katalon process did not exit within timeout. Terminating..."
+          $katalonProcess.Kill()
           $exitCode = 1
+        } else {
+          $exitCode = $katalonProcess.ExitCode
         }
         
         $endTime = Get-Date
@@ -122,11 +135,23 @@ jobs:
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
-        # Đọc output nếu có
-        if (Test-Path "katalon-output.txt") {
-          Write-Host "=== Last 50 lines of Katalon Output ==="
-          $outputLines = Get-Content "katalon-output.txt" -Tail 50
-          $outputLines | ForEach-Object { Write-Host $_ }
+        # Đọc và hiển thị output
+        if (Test-Path "katalon-stdout.txt") {
+          Write-Host "=== Katalon Standard Output ==="
+          $stdout = Get-Content "katalon-stdout.txt" -ErrorAction SilentlyContinue
+          if ($stdout) {
+            $stdout | ForEach-Object { Write-Host $_ }
+          } else {
+            Write-Host "(empty)"
+          }
+        }
+        
+        if (Test-Path "katalon-stderr.txt") {
+          Write-Host "=== Katalon Standard Error ==="
+          $stderr = Get-Content "katalon-stderr.txt" -ErrorAction SilentlyContinue
+          if ($stderr) {
+            $stderr | ForEach-Object { Write-Host $_ }
+          }
         }
         
         # Set để dùng sau
@@ -189,15 +214,50 @@ jobs:
           Write-Host "Reports folder not found in project root"
         }
         
-        # Tìm reports trong thư mục Katalon workspace (có thể reports được tạo ở đó)
+        # Tìm reports trong thư mục Katalon workspace (reports thường được tạo ở đó)
         $katalonWorkspace = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2\workspace"
+        Write-Host "Searching for reports in Katalon workspace: $katalonWorkspace"
+        
         if (Test-Path $katalonWorkspace) {
-          Write-Host "Searching in Katalon workspace: $katalonWorkspace"
-          Get-ChildItem -Path $katalonWorkspace -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "Found Reports in workspace at: $($_.FullName)"
-            # Copy reports về project nếu tìm thấy
-            Copy-Item -Path "$($_.FullName)\*" -Destination "Reports\" -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Host "Copied reports to project Reports folder"
+          # Tìm project folder trong workspace (thường là tên project hoặc hash)
+          $projectFolders = Get-ChildItem -Path $katalonWorkspace -Directory -ErrorAction SilentlyContinue
+          foreach ($projFolder in $projectFolders) {
+            Write-Host "Checking project folder: $($projFolder.FullName)"
+            
+            # Tìm Reports trong project folder
+            $reportDirs = Get-ChildItem -Path $projFolder.FullName -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue
+            foreach ($reportDir in $reportDirs) {
+              Write-Host "Found Reports at: $($reportDir.FullName)"
+              $reportFiles = Get-ChildItem -Path $reportDir.FullName -Recurse -File -ErrorAction SilentlyContinue
+              Write-Host "  Found $($reportFiles.Count) report files"
+              
+              if ($reportFiles.Count -gt 0) {
+                # Copy tất cả reports về project
+                Copy-Item -Path "$($reportDir.FullName)\*" -Destination "Reports\" -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "Copied $($reportFiles.Count) report files to project Reports folder"
+              }
+            }
+            
+            # Tìm reports trong thư mục execution (Katalon có thể tạo reports ở đó)
+            $executionDirs = Get-ChildItem -Path $projFolder.FullName -Directory -Filter "*execution*" -ErrorAction SilentlyContinue
+            foreach ($execDir in $executionDirs) {
+              $execReports = Get-ChildItem -Path $execDir.FullName -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue
+              foreach ($execReport in $execReports) {
+                Write-Host "Found Reports in execution folder: $($execReport.FullName)"
+                Copy-Item -Path "$($execReport.FullName)\*" -Destination "Reports\" -Recurse -Force -ErrorAction SilentlyContinue
+              }
+            }
+          }
+        }
+        
+        # Tìm reports mới nhất trong workspace (theo timestamp)
+        $allReports = Get-ChildItem -Path $katalonWorkspace -Recurse -File -Filter "*.html" -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt $startTime }
+        if ($allReports) {
+          Write-Host "Found $($allReports.Count) HTML report files created after test start"
+          $latestReportDir = $allReports | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object { $_.DirectoryName }
+          if ($latestReportDir) {
+            Write-Host "Copying reports from: $latestReportDir"
+            Copy-Item -Path "$latestReportDir\*" -Destination "Reports\" -Recurse -Force -ErrorAction SilentlyContinue
           }
         }
         
@@ -258,7 +318,8 @@ jobs:
           **/*.html
           **/*.xml
           **/*.json
-          katalon-output.txt
+          katalon-stdout.txt
+          katalon-stderr.txt
         if-no-files-found: warn
         retention-days: 30
 
