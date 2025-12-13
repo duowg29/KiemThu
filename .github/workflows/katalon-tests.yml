@@ -30,7 +30,7 @@ jobs:
     - name: Run Katalon Tests
       timeout-minutes: 30
       env:
-        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.execution.report.enabled=false -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
         KATALON_OPTS: '-noSplash -noExit -consoleLog'
       run: |
         # Thay đổi đường dẫn này theo đường dẫn Katalon Studio trên runner của bạn
@@ -72,29 +72,37 @@ jobs:
         Write-Host "Finding test reports..."
         Write-Host "Current directory: $PWD"
         
-        # Tìm tất cả reports trong project
-        $reportsPaths = @()
-        if (Test-Path "Reports") {
-          Write-Host "Found Reports folder"
-          $reportsPaths += "Reports"
-        }
-        if (Test-Path ".\Reports") {
-          Write-Host "Found .\Reports folder"
-          $reportsPaths += ".\Reports"
+        # Tạo thư mục Reports nếu chưa có
+        if (-not (Test-Path "Reports")) {
+          New-Item -ItemType Directory -Path "Reports" -Force | Out-Null
+          Write-Host "Created Reports directory"
         }
         
-        # Tìm reports trong các thư mục con
+        # Tìm tất cả reports trong project và workspace
+        Write-Host "Searching for reports in project directory..."
         Get-ChildItem -Path $PWD -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue | ForEach-Object {
-          Write-Host "Found Reports at: $($_.FullName)"
-          $reportsPaths += $_.FullName
+          Write-Host "Found Reports folder at: $($_.FullName)"
+          $files = Get-ChildItem -Path $_.FullName -Recurse -File -ErrorAction SilentlyContinue
+          Write-Host "  Found $($files.Count) files"
         }
         
-        # List tất cả files trong Reports nếu có
-        foreach ($path in $reportsPaths) {
-          Write-Host "Contents of $path :"
-          Get-ChildItem -Path $path -Recurse -ErrorAction SilentlyContinue | Select-Object FullName | ForEach-Object {
+        # Tìm trong thư mục workspace của runner (có thể Katalon tạo reports ở đó)
+        $workspacePath = $env:GITHUB_WORKSPACE
+        if ($workspacePath) {
+          Write-Host "Searching in workspace: $workspacePath"
+          Get-ChildItem -Path $workspacePath -Recurse -Directory -Filter "Reports" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Found Reports in workspace at: $($_.FullName)"
+          }
+        }
+        
+        # List tất cả files trong Reports
+        if (Test-Path "Reports") {
+          Write-Host "Contents of Reports folder:"
+          Get-ChildItem -Path "Reports" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
             Write-Host "  $($_.FullName)"
           }
+        } else {
+          Write-Host "Reports folder not found in project root"
         }
           
     - name: Upload Test Reports
@@ -105,6 +113,9 @@ jobs:
         path: |
           Reports/**
           **/Reports/**
+          **/*.html
+          **/*.xml
+          **/*.json
         if-no-files-found: warn
         retention-days: 30
 
