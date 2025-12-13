@@ -18,7 +18,7 @@ pipeline {
                     "C:\\Users\\feu29\\.katalon\\packages\\KSE-10.4.2\\katalon.exe" -runMode=console ^
                     -projectPath="%WORKSPACE%" ^
                     -retry=0 ^
-                    -testSuitePath="Test Suites/UI/Login Testcases" ^
+                    -testSuitePath="Test Suites/Functional/Login Testcases" ^
                     -executionProfile="default" ^
                     -browserType="Chrome" ^
                     -apiKey="" ^
