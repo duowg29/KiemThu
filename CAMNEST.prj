@@ -6,10 +6,10 @@
    <UUID>17a6f7ac-19a4-4216-9db9-b15a5c19cd34</UUID>
    <createdEdition>ENTERPRISE</createdEdition>
    <createdVersion>10.4.0</createdVersion>
-   <freeLicense>true</freeLicense>
+   <freeLicense>false</freeLicense>
    <migratedVersion>5.9.0</migratedVersion>
    <modifiedEdition>ENTERPRISE</modifiedEdition>
-   <modifiedVersion>10.4.0</modifiedVersion>
+   <modifiedVersion>10.4.2</modifiedVersion>
    <pageLoadTimeout>0</pageLoadTimeout>
    <projectFileLocation>C:\Users\feu29\Katalon Studio\KiemThu\CAMNEST.prj</projectFileLocation>
    <sourceContent>
