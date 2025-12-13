@@ -8,7 +8,6 @@
       <description></description>
       <initValue>'http://localhost/CAMNEST/'</initValue>
       <name>baseUrl</name>
-      <protected>false</protected>
-      <valueType>STRING</valueType>
-   </GlobalVariableEntity>
+      <value>http://localhost/CAMNEST/</value>
+   </globalVariableEntity>
 </GlobalVariableEntities>

@@ -102,9 +102,10 @@ jobs:
         Write-Host "Running Katalon Studio tests..."
         Write-Host "Katalon path: $KATALON_HOME\katalon.exe"
         Write-Host "Project path: $PWD"
+        Write-Host "Note: Project path is automatically set to workspace directory where runner checkout code"
         
         # Dùng test suite cụ thể thay vì collection (collection có thể không chạy được trong console mode)
-        $testSuitePath = "Test Suites/UI/Login Testcases"
+        $testSuitePath = "Test Suites/UI/Navigation Testcases"
         
         # Kiểm tra test suite có tồn tại không
         if (-not (Test-Path "$PWD\$testSuitePath.ts")) {
@@ -183,8 +184,8 @@ jobs:
         # Chạy Katalon trực tiếp và capture output
         Write-Host "Executing: $katalonExe"
         
-        # Set base URL for testing - Đảm bảo test chạy trên URL đúng, không phải localhost
-        $baseUrl = "https://upward-cunning-anteater.ngrok-free.app/CAMNEST/"
+        # Set base URL for testing - Chạy trên localhost
+        $baseUrl = "http://localhost/CAMNEST/"
         Write-Host "=========================================="
         Write-Host "CONFIGURATION:"
         Write-Host "  Base URL: $baseUrl"
@@ -196,7 +197,7 @@ jobs:
         $profilePath = "$PWD\Profiles\default.glbl"
         if (Test-Path $profilePath) {
           $profileContent = Get-Content $profilePath -Raw
-          if ($profileContent -match $baseUrl) {
+          if ($profileContent -like "*$baseUrl*") {
             Write-Host "Profile default contains correct URL"
           } else {
             Write-Host "WARNING: Profile default may not contain the expected URL"
@@ -217,40 +218,73 @@ jobs:
           $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dorg.eclipse.swt.browser.noDefault=true -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true -Dswt.autoKey=false'
           $env:KATALON_OPTS = '-noSplash -noExit -consoleLog'
           
-          # Chạy Katalon trực tiếp với & operator và capture output
-          # Redirect cả stdout và stderr
-          & $katalonExe `
-            -runMode=console `
-            -console `
-            -noSplash `
-            -projectPath="$projectPathFormatted" `
-            -retry=0 `
-            -testSuitePath="$testSuitePathFormatted" `
-            -executionProfile=default `
-            -browserType="Chrome (headless)" `
-            -apiKey="" `
-            -g_username="" `
-            -g_password="" `
-            -g_baseUrl="$baseUrl" `
-            -reportFolder="$reportFolderFormatted" `
-            *>&1 | Tee-Object -FilePath "katalon-output.txt"
+          Write-Host "Starting Katalon process..."
+          Write-Host "Command: $katalonExe -runMode=console -console -noSplash -consoleLog -projectPath=`"$projectPathFormatted`" -retry=0 -testSuitePath=`"$testSuitePathFormatted`" -executionProfile=default -browserType=`"Chrome (headless)`" -apiKey= -g_username= -g_password= -g_baseUrl=`"$baseUrl`" -reportFolder=`"$reportFolderFormatted`""
           
-          # Lấy exit code
-          $exitCode = $LASTEXITCODE
+          # Chạy Katalon và capture output vào file
+          # Lưu ý: Không dùng -noExit vì nó sẽ khiến Katalon không thoát sau khi chạy xong
+          Write-Host "Launching Katalon (this may take several minutes)..."
+          
+          $process = Start-Process -FilePath $katalonExe `
+            -ArgumentList "-runMode=console", "-console", "-noSplash", "-consoleLog", "-projectPath=$projectPathFormatted", "-retry=0", "-testSuitePath=$testSuitePathFormatted", "-executionProfile=default", "-browserType=Chrome (headless)", "-apiKey=", "-g_username=", "-g_password=", "-g_baseUrl=$baseUrl", "-reportFolder=$reportFolderFormatted" `
+            -NoNewWindow `
+            -Wait `
+            -PassThru `
+            -RedirectStandardOutput "katalon-stdout.txt" `
+            -RedirectStandardError "katalon-stderr.txt"
+          
+          # Lấy exit code từ process
+          $exitCode = $process.ExitCode
           
           if ($null -eq $exitCode) {
             $exitCode = 0
           }
           
+          Write-Host "Katalon process finished. Exit code: $exitCode"
+          
           Write-Host "=========================================="
           Write-Host "Katalon process completed with exit code: $exitCode"
           
-          # Đọc và hiển thị output
-          if (Test-Path "katalon-output.txt") {
-            Write-Host "=== Last 100 lines of Katalon Output ==="
-            $outputLines = Get-Content "katalon-output.txt" -Tail 100 -ErrorAction SilentlyContinue
-            if ($outputLines) {
-              $outputLines | ForEach-Object { Write-Host $_ }
+          # Đọc và hiển thị output từ stdout
+          if (Test-Path "katalon-stdout.txt") {
+            $stdoutSize = (Get-Item "katalon-stdout.txt").Length
+            Write-Host "=== Katalon Standard Output (File size: $stdoutSize bytes, Last 300 lines) ==="
+            $stdoutLines = Get-Content "katalon-stdout.txt" -Tail 300 -ErrorAction SilentlyContinue
+            if ($stdoutLines) {
+              $stdoutLines | ForEach-Object { Write-Host $_ }
+            } else {
+              Write-Host "(stdout file is empty)"
+            }
+          } else {
+            Write-Host "WARNING: katalon-stdout.txt not found"
+          }
+          
+          # Đọc và hiển thị output từ stderr (quan trọng để debug)
+          if (Test-Path "katalon-stderr.txt") {
+            $stderrSize = (Get-Item "katalon-stderr.txt").Length
+            Write-Host "=== Katalon Standard Error (File size: $stderrSize bytes, Last 300 lines) ==="
+            $stderrLines = Get-Content "katalon-stderr.txt" -Tail 300 -ErrorAction SilentlyContinue
+            if ($stderrLines) {
+              $stderrLines | ForEach-Object { Write-Host $_ }
+            } else {
+              Write-Host "(stderr file is empty)"
+            }
+          } else {
+            Write-Host "WARNING: katalon-stderr.txt not found"
+          }
+          
+          # Kiểm tra xem có lỗi license/authentication không
+          if (Test-Path "katalon-stdout.txt") {
+            $stdoutContent = Get-Content "katalon-stdout.txt" -Raw -ErrorAction SilentlyContinue
+            if ($stdoutContent) {
+              if ($stdoutContent -like "*license*" -or $stdoutContent -like "*License*" -or $stdoutContent -like "*authentication*" -or $stdoutContent -like "*login*") {
+                Write-Host "⚠ WARNING: Possible license/authentication issue detected in output"
+                Write-Host "Katalon Studio FREE version can run in CI/CD, but you may need to:"
+                Write-Host "1. Open Katalon Studio GUI on the runner machine at least once"
+                Write-Host "2. Login with your Katalon account"
+                Write-Host "3. Activate the free license"
+                Write-Host "4. Then the console mode should work"
+              }
             }
           }
           
@@ -271,24 +305,7 @@ jobs:
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
-        # Đọc và hiển thị output
-        if (Test-Path "katalon-stdout.txt") {
-          Write-Host "=== Katalon Standard Output ==="
-          $stdout = Get-Content "katalon-stdout.txt" -ErrorAction SilentlyContinue
-          if ($stdout) {
-            $stdout | ForEach-Object { Write-Host $_ }
-          } else {
-            Write-Host "(empty)"
-          }
-        }
-        
-        if (Test-Path "katalon-stderr.txt") {
-          Write-Host "=== Katalon Standard Error ==="
-          $stderr = Get-Content "katalon-stderr.txt" -ErrorAction SilentlyContinue
-          if ($stderr) {
-            $stderr | ForEach-Object { Write-Host $_ }
-          }
-        }
+        # Output đã được hiển thị trong try block ở trên
         
         # Set để dùng sau
         $global:LASTEXITCODE = $exitCode
@@ -296,7 +313,7 @@ jobs:
         # Kiểm tra nếu chạy quá nhanh (có thể test không chạy)
         if ($duration.TotalSeconds -lt 10) {
           $durationSeconds = [math]::Round($duration.TotalSeconds, 2)
-          Write-Host "WARNING: Test completed too quickly ($durationSeconds seconds)."
+          Write-Host "WARNING: Test completed too quickly - $durationSeconds seconds."
           Write-Host "This may indicate that tests did not actually run."
           Write-Host "Possible reasons:"
           Write-Host "  1. Test suite path is incorrect"
