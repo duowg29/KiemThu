@@ -38,11 +38,18 @@ Workflow `katalon-tests-kre.yml` bị lỗi khi download Katalon Runtime Engine 
    - Copy các lệnh từ GitHub
 
 3. **Chạy trên máy Windows của bạn:**
+   
+   **Bạn có thể chạy ở BẤT KỲ Ổ NÀO (C, D, E, ...):**
    ```powershell
-   # Tạo thư mục
-   cd C:\
+   # Ví dụ: Dùng ổ E (hoặc bất kỳ ổ nào bạn muốn)
+   E:
    mkdir actions-runner
    cd actions-runner
+   
+   # Hoặc dùng ổ C:
+   # cd C:\
+   # mkdir actions-runner
+   # cd actions-runner
    
    # Download runner (copy lệnh từ GitHub)
    Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.329.0/actions-runner-win-x64-2.329.0.zip -OutFile actions-runner-win-x64-2.329.0.zip
