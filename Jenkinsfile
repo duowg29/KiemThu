@@ -15,14 +15,14 @@ pipeline {
                 echo 'Running Katalon Studio tests...'
                 timeout(time: 30, unit: 'MINUTES') {
                 bat '''
-                    set JAVA_OPTS=-Djava.awt.headless=false
-                    set KATALON_OPTS=-noSplash -noExit
+                    set JAVA_OPTS=-Djava.awt.headless=true -Dkatalon.execution.report.enabled=false
+                    set KATALON_OPTS=-noSplash -noExit -consoleLog
                     "C:\\Users\\feu29\\.katalon\\packages\\KSE-10.4.2\\katalon.exe" -runMode=console ^
                     -projectPath="%WORKSPACE%" ^
                     -retry=0 ^
                     -testSuitePath="Test Suites/Functional/Login Testcases" ^
                     -executionProfile="default" ^
-                    -browserType="Chrome" ^
+                    -browserType="Chrome (headless)" ^
                     -apiKey="" ^
                     -g_username="" ^
                     -g_password=""
