@@ -54,23 +54,34 @@ jobs:
         Write-Host "Katalon path: $KATALON_HOME\katalon.exe"
         Write-Host "Project path: $PWD"
         
+        # Dùng test suite cụ thể thay vì collection (collection có thể không chạy được trong console mode)
+        $testSuitePath = "Test Suites/UI/Login Testcases"
+        
         # Kiểm tra test suite có tồn tại không
-        $testSuitePath = "Test Suites/UI Testing"
         if (-not (Test-Path "$PWD\$testSuitePath.ts")) {
           Write-Host "WARNING: Test suite file not found at $PWD\$testSuitePath.ts"
-          Write-Host "Listing available test suites:"
-          Get-ChildItem -Path "$PWD\Test Suites" -Recurse -Filter "*.ts" | ForEach-Object {
-            Write-Host "  $($_.FullName.Replace($PWD, '.'))"
+          Write-Host "Trying alternative path..."
+          # Thử không có extension
+          if (Test-Path "$PWD\$testSuitePath") {
+            Write-Host "Found test suite without extension"
+          } else {
+            Write-Host "Listing available test suites:"
+            Get-ChildItem -Path "$PWD\Test Suites" -Recurse -Filter "*.ts" | Where-Object { $_.Name -notlike "*Testing.ts" } | ForEach-Object {
+              Write-Host "  $($_.FullName.Replace($PWD, '.'))"
+            }
+            Write-Host "NOTE: Test suite collections (*Testing.ts) may not work in console mode."
+            Write-Host "Use specific test suites instead (e.g., Login Testcases, Signup Testcases)"
           }
         } else {
           Write-Host "Test suite found: $PWD\$testSuitePath.ts"
         }
         
         Write-Host "Starting Katalon execution..."
+        Write-Host "Command: $KATALON_HOME\katalon.exe -runMode=console -projectPath=`"$PWD`" -testSuitePath=`"$testSuitePath`" -executionProfile=`"default`" -browserType=`"Chrome (headless)`" -reportFolder=`"$PWD\Reports`""
         $startTime = Get-Date
         
-        # Chạy Katalon với output chi tiết
-        & "$KATALON_HOME\katalon.exe" -runMode=console `
+        # Chạy Katalon với output chi tiết và capture output
+        $output = & "$KATALON_HOME\katalon.exe" -runMode=console `
           -projectPath="$PWD" `
           -retry=0 `
           -testSuitePath="$testSuitePath" `
@@ -79,12 +90,27 @@ jobs:
           -apiKey="" `
           -g_username="" `
           -g_password="" `
-          -reportFolder="$PWD\Reports"
+          -reportFolder="$PWD\Reports" `
+          2>&1
+        
+        # Hiển thị output
+        $output | ForEach-Object {
+          Write-Host $_
+        }
         
         $endTime = Get-Date
         $duration = $endTime - $startTime
+        Write-Host "=========================================="
         Write-Host "Katalon execution completed in $($duration.TotalSeconds) seconds"
         Write-Host "Exit code: $LASTEXITCODE"
+        Write-Host "=========================================="
+        
+        # Kiểm tra nếu chạy quá nhanh (có thể test không chạy)
+        if ($duration.TotalSeconds -lt 10) {
+          Write-Host "WARNING: Test completed too quickly ($($duration.TotalSeconds) seconds)."
+          Write-Host "This may indicate that tests did not actually run."
+          Write-Host "Check the output above for any errors."
+        }
           
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Tests failed with exit code $LASTEXITCODE"
