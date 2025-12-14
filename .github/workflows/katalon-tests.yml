@@ -236,6 +236,8 @@ jobs:
             $process.BeginErrorReadLine()
             
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process started (PID: $($process.Id))" -ForegroundColor Green
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Waiting for output (this may take 1-2 minutes for Katalon to initialize)..." -ForegroundColor Yellow
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Katalon is loading project and initializing. Please wait..." -ForegroundColor Yellow
             
             # Monitor và kill GUI processes nếu chúng mở ra
             $guiMonitorJob = Start-Job -ScriptBlock {
