@@ -49,6 +49,35 @@ jobs:
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
         $baseUrl = "http://localhost/CAMNEST/"
         
+        # Validate project path
+        if (-not (Test-Path $projectPath)) {
+          Write-Host "ERROR: Project path does not exist: $projectPath" -ForegroundColor Red
+          exit 1
+        }
+        
+        # Validate test suite path
+        $testSuiteFullPath = Join-Path $projectPath $testSuitePath
+        if (-not (Test-Path $testSuiteFullPath)) {
+          Write-Host "ERROR: Test suite path does not exist: $testSuiteFullPath" -ForegroundColor Red
+          Write-Host "Available test suites:" -ForegroundColor Yellow
+          $testSuitesDir = Join-Path $projectPath "Test Suites"
+          if (Test-Path $testSuitesDir) {
+            Get-ChildItem -Path $testSuitesDir -Recurse -Filter "*.ts" | ForEach-Object {
+              Write-Host "  - $($_.FullName.Replace($projectPath, '').TrimStart('\'))"
+            }
+          }
+          exit 1
+        }
+        
+        # Validate project file
+        $projectFile = Join-Path $projectPath "*.prj"
+        $prjFiles = Get-ChildItem -Path $projectFile -ErrorAction SilentlyContinue
+        if (-not $prjFiles) {
+          Write-Host "WARNING: No .prj file found in project directory" -ForegroundColor Yellow
+        } else {
+          Write-Host "Found project file: $($prjFiles[0].Name)"
+        }
+        
         # Tạo thư mục Reports
         if (-not (Test-Path "Reports")) {
           New-Item -ItemType Directory -Path "Reports" -Force | Out-Null
@@ -58,7 +87,10 @@ jobs:
         Write-Host "Running Katalon tests..."
         Write-Host "Project: $projectPath"
         Write-Host "Test Suite: $testSuitePath"
+        Write-Host "Test Suite Full Path: $testSuiteFullPath"
         Write-Host "Katalon Executable: $katalonExe"
+        Write-Host "Report Folder: $reportFolder"
+        Write-Host "Base URL: $baseUrl"
         Write-Host "=========================================="
         
         # Set environment variables trước khi chạy (đảm bảo headless)
@@ -71,6 +103,7 @@ jobs:
         Write-Host ""
         
         # Xây dựng lệnh Katalon
+        # Lưu ý: ProcessStartInfo.Arguments cần format đúng, không cần quote nếu dùng array
         $katalonArgs = @(
           '-runMode=console',
           '-console',
@@ -86,66 +119,56 @@ jobs:
         )
         
         Write-Host "Starting Katalon execution..."
-        Write-Host "Command: $katalonExe $($katalonArgs -join ' ')"
         Write-Host "Note: This may take a while on slower machines. Please wait..."
         Write-Host ""
         
-        # Chạy Katalon với Start-Process để đảm bảo đợi process hoàn thành
-        # Sử dụng -Wait và -NoNewWindow để đảm bảo không mở cửa sổ mới và đợi hoàn thành
-        $processInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $processInfo.FileName = $katalonExe
-        $processInfo.Arguments = $katalonArgs -join ' '
-        $processInfo.UseShellExecute = $false
-        $processInfo.RedirectStandardOutput = $true
-        $processInfo.RedirectStandardError = $true
-        $processInfo.CreateNoWindow = $true
-        $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
-        $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
+        # Chuyển đến thư mục project trước khi chạy
+        Push-Location $projectPath
         
-        $process = New-Object System.Diagnostics.Process
-        $process.StartInfo = $processInfo
-        
-        # Xử lý output real-time
-        $outputBuilder = New-Object System.Text.StringBuilder
-        $errorBuilder = New-Object System.Text.StringBuilder
-        
-        $script:outputData = ""
-        $script:errorData = ""
-        
-        $process.add_OutputDataReceived({
-          param($sender, $e)
-          if ($e.Data) {
-            $outputBuilder.AppendLine($e.Data) | Out-Null
-            Write-Host $e.Data
+        try {
+          # Chạy Katalon trực tiếp với & operator để dễ debug
+          # Điều này sẽ capture output và error tốt hơn
+          Write-Host "Launching Katalon process from: $projectPath"
+          Write-Host "Command: $katalonExe $($katalonArgs -join ' ')"
+          Write-Host ""
+          
+          # Chạy và capture output
+          $output = & $katalonExe @katalonArgs 2>&1
+          $exitCode = $LASTEXITCODE
+          
+          # Hiển thị output
+          if ($output) {
+            $output | ForEach-Object {
+              if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                Write-Host $_.ToString() -ForegroundColor Red
+              } else {
+                Write-Host $_
+              }
+            }
           }
-        })
-        
-        $process.add_ErrorDataReceived({
-          param($sender, $e)
-          if ($e.Data) {
-            $errorBuilder.AppendLine($e.Data) | Out-Null
-            Write-Host $e.Data -ForegroundColor Yellow
+          
+          # Nếu exit code null, set về 0
+          if ($null -eq $exitCode) {
+            $exitCode = 0
           }
-        })
-        
-        # Bắt đầu process
-        Write-Host "Launching Katalon process..."
-        $process.Start() | Out-Null
-        $process.BeginOutputReadLine()
-        $process.BeginErrorReadLine()
-        
-        # Đợi process hoàn thành với timeout
-        $timeoutMinutes = 25
-        $timeoutSeconds = $timeoutMinutes * 60
-        $processFinished = $process.WaitForExit($timeoutSeconds * 1000)
-        
-        if (-not $processFinished) {
-          Write-Host "ERROR: Process timeout after $timeoutMinutes minutes" -ForegroundColor Red
-          $process.Kill()
-          exit 1
+          
+        } catch {
+          Write-Host "ERROR: Exception occurred while running Katalon" -ForegroundColor Red
+          Write-Host $_.Exception.Message -ForegroundColor Red
+          Write-Host $_.ScriptStackTrace -ForegroundColor Red
+          $exitCode = 1
+        } finally {
+          # Quay lại thư mục ban đầu
+          Pop-Location
         }
         
-        $exitCode = $process.ExitCode
+        # Để tương thích với code phía dưới
+        $outputLines = @()
+        $errorLines = @()
+        if ($output) {
+          $outputLines = $output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }
+          $errorLines = $output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }
+        }
         
         Write-Host ""
         Write-Host "=========================================="
@@ -153,20 +176,85 @@ jobs:
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
+        # Hiển thị output và error nếu có
+        if ($outputLines.Count -gt 0) {
+          Write-Host ""
+          Write-Host "=== KATALON OUTPUT (last 50 lines) ===" -ForegroundColor Cyan
+          $outputLines | Select-Object -Last 50 | ForEach-Object { Write-Host $_ }
+        }
+        
+        if ($errorLines.Count -gt 0) {
+          Write-Host ""
+          Write-Host "=== KATALON ERRORS ===" -ForegroundColor Red
+          $errorLines | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+        }
+        
+        # Kiểm tra log files của Katalon
+        $logDirs = @(
+          "$projectPath\Logs",
+          "$env:USERPROFILE\.katalon\logs",
+          "$KATALON_HOME\configuration\org.eclipse.osgi"
+        )
+        
+        foreach ($logDir in $logDirs) {
+          if (Test-Path $logDir) {
+            Write-Host ""
+            Write-Host "Checking for log files in: $logDir" -ForegroundColor Cyan
+            $logFiles = Get-ChildItem -Path $logDir -Recurse -Filter "*.log" -ErrorAction SilentlyContinue | 
+                        Sort-Object LastWriteTime -Descending | 
+                        Select-Object -First 5
+            if ($logFiles) {
+              Write-Host "Found log files:" -ForegroundColor Yellow
+              foreach ($logFile in $logFiles) {
+                Write-Host "  - $($logFile.FullName) (Modified: $($logFile.LastWriteTime))"
+                # Hiển thị 20 dòng cuối của log file
+                try {
+                  $logContent = Get-Content $logFile.FullName -Tail 20 -ErrorAction SilentlyContinue
+                  if ($logContent) {
+                    Write-Host "  Last 20 lines:" -ForegroundColor Gray
+                    $logContent | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+                  }
+                } catch {
+                  Write-Host "  Could not read log file" -ForegroundColor Yellow
+                }
+              }
+            }
+          }
+        }
+        
         # Kiểm tra kết quả
         if ($exitCode -ne 0) {
-          Write-Host "WARNING: Katalon exited with code $exitCode" -ForegroundColor Yellow
+          Write-Host ""
+          Write-Host "ERROR: Katalon exited with code $exitCode" -ForegroundColor Red
+          Write-Host "Common exit codes:" -ForegroundColor Yellow
+          Write-Host "  0 = Success"
+          Write-Host "  1 = General error"
+          Write-Host "  2 = Configuration/Project error"
+          Write-Host "  3 = Test execution error"
+          Write-Host ""
+          Write-Host "Please check the logs above for details." -ForegroundColor Yellow
         } else {
+          Write-Host ""
           Write-Host "SUCCESS: Tests completed successfully" -ForegroundColor Green
         }
         
         # Kiểm tra xem có reports không
         if (Test-Path "Reports") {
           $reportFiles = Get-ChildItem -Path "Reports" -Recurse -File
-          Write-Host "Found $($reportFiles.Count) report file(s)"
+          Write-Host ""
+          Write-Host "Found $($reportFiles.Count) report file(s):" -ForegroundColor Cyan
+          $reportFiles | ForEach-Object {
+            Write-Host "  - $($_.FullName)"
+          }
+        } else {
+          Write-Host ""
+          Write-Host "WARNING: Reports folder not found or empty" -ForegroundColor Yellow
         }
         
-        exit $exitCode
+        # Exit với code tương ứng
+        if ($exitCode -ne 0) {
+          exit $exitCode
+        }
           
     - name: Upload Test Reports
       if: always()
