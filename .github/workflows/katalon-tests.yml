@@ -172,23 +172,78 @@ jobs:
             $script:errors = New-Object System.Collections.ArrayList
             
             # Chạy và capture tất cả output (cả stdout và stderr)
-            $ErrorActionPreference = 'Continue'
-            $allDirectOutput = & $katalonExe @katalonArgs 2>&1
-            $directExitCode = $LASTEXITCODE
+            # QUAN TRỌNG: Dùng Start-Process với CreateNoWindow để đảm bảo không mở GUI
+            $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+            $processInfo.FileName = $katalonExe
+            $processInfo.Arguments = $katalonArgs -join ' '
+            $processInfo.UseShellExecute = $false
+            $processInfo.RedirectStandardOutput = $true
+            $processInfo.RedirectStandardError = $true
+            $processInfo.CreateNoWindow = $true
+            $processInfo.WorkingDirectory = $projectPath
+            
+            # Set environment variables
+            $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
+            $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
+            
+            $process = New-Object System.Diagnostics.Process
+            $process.StartInfo = $processInfo
+            
+            # Capture output
+            $outputBuilder = New-Object System.Text.StringBuilder
+            $errorBuilder = New-Object System.Text.StringBuilder
+            
+            $outputEvent = Register-ObjectEvent -InputObject $process -EventName OutputDataReceived -Action {
+                if ($EventArgs.Data) {
+                    [void]$Event.MessageData.AppendLine($EventArgs.Data)
+                }
+            } -MessageData $outputBuilder
+            
+            $errorEvent = Register-ObjectEvent -InputObject $process -EventName ErrorDataReceived -Action {
+                if ($EventArgs.Data) {
+                    [void]$Event.MessageData.AppendLine($EventArgs.Data)
+                }
+            } -MessageData $errorBuilder
+            
+            $process.Start() | Out-Null
+            $process.BeginOutputReadLine()
+            $process.BeginErrorReadLine()
+            
+            # Đợi process hoàn thành (timeout 30 phút)
+            $process.WaitForExit(1800000)
+            
+            if (-not $process.HasExited) {
+                Write-Host "[WARNING] Process timeout, killing..." -ForegroundColor Yellow
+                $process.Kill()
+                $directExitCode = 1
+            } else {
+                $directExitCode = $process.ExitCode
+            }
+            
+            # Lấy output
+            $allDirectOutput = $outputBuilder.ToString() -split "`n"
+            $allDirectErrors = $errorBuilder.ToString() -split "`n"
+            
+            # Cleanup events
+            Unregister-Event -SourceIdentifier $outputEvent.Name -ErrorAction SilentlyContinue
+            Unregister-Event -SourceIdentifier $errorEvent.Name -ErrorAction SilentlyContinue
             
             # Phân loại output - xử lý từng dòng
             if ($allDirectOutput) {
-              foreach ($item in $allDirectOutput) {
-                if ($item -is [System.Management.Automation.ErrorRecord]) {
-                  $errorStr = $item.ToString()
-                  [void]$script:errors.Add($errorStr)
-                  Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: $errorStr" -ForegroundColor Red
-                } else {
-                  $line = if ($item -is [string]) { $item } else { $item.ToString() }
-                  if ($null -ne $line -and $line.Trim() -ne '') {
-                    [void]$script:output.Add($line)
-                    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $line"
-                  }
+              foreach ($line in $allDirectOutput) {
+                if ($null -ne $line -and $line.Trim() -ne '') {
+                  [void]$script:output.Add($line)
+                  Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $line"
+                }
+              }
+            }
+            
+            # Xử lý errors
+            if ($allDirectErrors) {
+              foreach ($line in $allDirectErrors) {
+                if ($null -ne $line -and $line.Trim() -ne '') {
+                  [void]$script:errors.Add($line)
+                  Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: $line" -ForegroundColor Red
                 }
               }
             }
