@@ -152,7 +152,48 @@ jobs:
           Write-Host "This may take a while on slower machines. Please wait..."
           Write-Host ""
           
-          # Dùng Start-Process với CreateNoWindow để đảm bảo KHÔNG mở GUI
+          # Thử cách đơn giản hơn trước: chạy trực tiếp với & để xem output ngay
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Attempting direct execution to capture immediate output..." -ForegroundColor Yellow
+          
+          $directOutput = @()
+          $directErrors = @()
+          $directExitCode = $null
+          
+          try {
+            # Chạy trực tiếp để xem output ngay
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Executing Katalon directly..." -ForegroundColor Green
+            $allDirectOutput = & $katalonExe @katalonArgs 2>&1
+            $directExitCode = $LASTEXITCODE
+            
+            # Phân loại output
+            $script:output = New-Object System.Collections.ArrayList
+            $script:errors = New-Object System.Collections.ArrayList
+            
+            foreach ($line in $allDirectOutput) {
+              if ($line -is [System.Management.Automation.ErrorRecord]) {
+                $errorStr = $line.ToString()
+                [void]$script:errors.Add($errorStr)
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $errorStr" -ForegroundColor Red
+              } elseif ($null -ne $line) {
+                [void]$script:output.Add($line)
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $line"
+              }
+            }
+            
+            if ($null -eq $directExitCode) {
+              $directExitCode = 0
+            }
+            
+            $exitCode = $directExitCode
+            
+            Write-Host ""
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Direct execution completed with exit code: $exitCode" -ForegroundColor Green
+            
+          } catch {
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Direct execution exception: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Trying Start-Process method as fallback..." -ForegroundColor Yellow
+            
+            # Fallback: Dùng Start-Process với CreateNoWindow để đảm bảo KHÔNG mở GUI
           $processInfo = New-Object System.Diagnostics.ProcessStartInfo
           $processInfo.FileName = $katalonExe
           $processInfo.Arguments = $katalonArgs -join ' '
@@ -200,67 +241,91 @@ jobs:
           
           # Bắt đầu process
           Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Starting Katalon process..." -ForegroundColor Green
-          $process.Start() | Out-Null
+          
+          try {
+            $process.Start() | Out-Null
+          } catch {
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: Failed to start process" -ForegroundColor Red
+            Write-Host "Exception: $($_.Exception.Message)" -ForegroundColor Red
+            throw
+          }
+          
           $process.BeginOutputReadLine()
           $process.BeginErrorReadLine()
           
           Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process started (PID: $($process.Id))" -ForegroundColor Green
-          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Monitoring process status..." -ForegroundColor Yellow
-          Write-Host ""
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Waiting for initial output (10 seconds)..." -ForegroundColor Yellow
           
-          # Monitor process với timeout và progress updates
-          $timeoutMinutes = 25
-          $timeoutSeconds = $timeoutMinutes * 60
-          $startTime = Get-Date
-          $lastStatusTime = Get-Date
-          $noOutputTimeout = 300  # 5 phút không có output = có thể treo
+          # Đợi một chút để xem có output ban đầu không
+          Start-Sleep -Seconds 10
           
-          while (-not $process.HasExited) {
-            $elapsed = (Get-Date) - $startTime
-            $elapsedSeconds = [int]$elapsed.TotalSeconds
+          # Kiểm tra xem process có còn chạy không
+          if ($process.HasExited) {
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] WARNING: Process exited very quickly (within 10 seconds)" -ForegroundColor Yellow
+            $exitCode = $process.ExitCode
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Exit code: $exitCode" -ForegroundColor Yellow
+          } else {
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process is still running. Monitoring..." -ForegroundColor Green
+            Write-Host ""
             
-            # Kiểm tra timeout tổng
-            if ($elapsedSeconds -ge $timeoutSeconds) {
-              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] TIMEOUT: Process exceeded $timeoutMinutes minutes" -ForegroundColor Red
+            # Monitor process với timeout và progress updates
+            $timeoutMinutes = 25
+            $timeoutSeconds = $timeoutMinutes * 60
+            $startTime = Get-Date
+            $lastStatusTime = Get-Date
+            $noOutputTimeout = 300  # 5 phút không có output = có thể treo
+            
+            while (-not $process.HasExited) {
+              $elapsed = (Get-Date) - $startTime
+              $elapsedSeconds = [int]$elapsed.TotalSeconds
+              
+              # Kiểm tra timeout tổng
+              if ($elapsedSeconds -ge $timeoutSeconds) {
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] TIMEOUT: Process exceeded $timeoutMinutes minutes" -ForegroundColor Red
+                $process.Kill()
+                $exitCode = 1
+                break
+              }
+              
+              # Kiểm tra timeout không có output
+              $timeSinceLastOutput = (Get-Date) - $script:lastOutputTime
+              if ($timeSinceLastOutput.TotalSeconds -ge $noOutputTimeout) {
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] WARNING: No output for $noOutputTimeout seconds. Process may be hung." -ForegroundColor Yellow
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process is still running (PID: $($process.Id)). Checking if it's responsive..." -ForegroundColor Yellow
+              }
+              
+              # Status update mỗi 30 giây
+              $timeSinceLastStatus = (Get-Date) - $lastStatusTime
+              if ($timeSinceLastStatus.TotalSeconds -ge 30) {
+                $minutes = [int]($elapsed.TotalMinutes)
+                $seconds = [int]($elapsed.TotalSeconds % 60)
+                Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Status: Still running... (Elapsed: ${minutes}m ${seconds}s, PID: $($process.Id), Output lines: $($script:output.Count))" -ForegroundColor Gray
+                $lastStatusTime = Get-Date
+              }
+              
+              Start-Sleep -Seconds 2
+            }
+            
+            # Đợi một chút để capture output cuối cùng
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process exited. Waiting for final output (5 seconds)..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 5
+            
+            if (-not $process.HasExited) {
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process did not exit properly. Forcing termination..." -ForegroundColor Red
               $process.Kill()
               $exitCode = 1
-              break
-            }
-            
-            # Kiểm tra timeout không có output
-            $timeSinceLastOutput = (Get-Date) - $lastOutputTime
-            if ($timeSinceLastOutput.TotalSeconds -ge $noOutputTimeout) {
-              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] WARNING: No output for $noOutputTimeout seconds. Process may be hung." -ForegroundColor Yellow
-              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process is still running (PID: $($process.Id)). Checking if it's responsive..." -ForegroundColor Yellow
-            }
-            
-            # Status update mỗi 30 giây
-            $timeSinceLastStatus = (Get-Date) - $lastStatusTime
-            if ($timeSinceLastStatus.TotalSeconds -ge 30) {
+            } else {
+              $exitCode = $process.ExitCode
+              $elapsed = (Get-Date) - $startTime
               $minutes = [int]($elapsed.TotalMinutes)
               $seconds = [int]($elapsed.TotalSeconds % 60)
-              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Status: Still running... (Elapsed: ${minutes}m ${seconds}s, PID: $($process.Id))" -ForegroundColor Gray
-              $lastStatusTime = Get-Date
+              Write-Host ""
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process completed (Exit code: $exitCode, Duration: ${minutes}m ${seconds}s)" -ForegroundColor Green
             }
-            
-            Start-Sleep -Seconds 2
           }
           
-          # Đợi một chút để capture output cuối cùng
-          Start-Sleep -Seconds 3
-          
-          if (-not $process.HasExited) {
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process did not exit properly. Forcing termination..." -ForegroundColor Red
-            $process.Kill()
-            $exitCode = 1
-          } else {
-            $exitCode = $process.ExitCode
-            $elapsed = (Get-Date) - $startTime
-            $minutes = [int]($elapsed.TotalMinutes)
-            $seconds = [int]($elapsed.TotalSeconds % 60)
-            Write-Host ""
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process completed (Exit code: $exitCode, Duration: ${minutes}m ${seconds}s)" -ForegroundColor Green
-          }
+          # Đảm bảo output được flush
+          Start-Sleep -Seconds 2
           
           # Nếu exit code null, set về 0
           if ($null -eq $exitCode) {
@@ -272,6 +337,22 @@ jobs:
           Write-Host "=== EXECUTION SUMMARY ===" -ForegroundColor Cyan
           Write-Host "Output lines captured: $($script:output.Count)"
           Write-Host "Error lines captured: $($script:errors.Count)"
+          Write-Host "Exit code: $exitCode"
+          Write-Host ""
+          
+          # Hiển thị output nếu có
+          if ($script:output.Count -gt 0) {
+            Write-Host "=== KATALON OUTPUT (last 100 lines) ===" -ForegroundColor Cyan
+            $script:output | Select-Object -Last 100 | ForEach-Object {
+              Write-Host $_
+            }
+          } else {
+            Write-Host "WARNING: No output captured from Katalon!" -ForegroundColor Yellow
+            Write-Host "This might indicate:" -ForegroundColor Yellow
+            Write-Host "  1. Process exited too quickly" -ForegroundColor Yellow
+            Write-Host "  2. Output was not redirected properly" -ForegroundColor Yellow
+            Write-Host "  3. Katalon failed to start" -ForegroundColor Yellow
+          }
           
           if ($script:errors.Count -gt 0) {
             Write-Host ""
@@ -279,6 +360,22 @@ jobs:
             $script:errors | ForEach-Object {
               Write-Host $_ -ForegroundColor Red
             }
+          }
+          
+          # Nếu exit code 2, hiển thị thông tin thêm
+          if ($exitCode -eq 2) {
+            Write-Host ""
+            Write-Host "=== EXIT CODE 2 ANALYSIS ===" -ForegroundColor Yellow
+            Write-Host "Exit code 2 typically means:" -ForegroundColor Yellow
+            Write-Host "  - Configuration/Project error" -ForegroundColor Yellow
+            Write-Host "  - Invalid project path or test suite path" -ForegroundColor Yellow
+            Write-Host "  - Missing required files or dependencies" -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Please check:" -ForegroundColor Yellow
+            Write-Host "  1. Project path: $projectPath" -ForegroundColor Yellow
+            Write-Host "  2. Test suite path: $testSuitePathFormatted" -ForegroundColor Yellow
+            Write-Host "  3. Katalon executable: $katalonExe" -ForegroundColor Yellow
+            Write-Host "  4. Check if project file (.prj) exists" -ForegroundColor Yellow
           }
           
           # Để tương thích với code phía dưới
