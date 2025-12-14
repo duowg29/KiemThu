@@ -32,13 +32,26 @@ jobs:
           exit 1
         }
         
-        # Ưu tiên dùng katalonc.exe (console-only, không mở GUI)
+        # QUAN TRỌNG: Kill tất cả process Katalon GUI đang chạy trước khi chạy console mode
+        Write-Host "Killing any existing Katalon GUI processes..." -ForegroundColor Yellow
+        Get-Process | Where-Object { 
+          $_.ProcessName -like '*katalon*' -and 
+          $_.MainWindowTitle -ne '' -and
+          $_.Path -notlike '*katalonc.exe*'
+        } | ForEach-Object {
+          Write-Host "Killing GUI process: $($_.ProcessName) (PID: $($_.Id))" -ForegroundColor Yellow
+          Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+        }
+        Start-Sleep -Seconds 2
+        
+        # QUAN TRỌNG: Chỉ dùng katalonc.exe (console-only, KHÔNG BAO GIỜ dùng katalon.exe)
         $katalonExe = "$KATALON_HOME\katalonc.exe"
         if (-not (Test-Path $katalonExe)) {
-          Write-Host "katalonc.exe not found, using katalon.exe instead"
-          $katalonExe = "$KATALON_HOME\katalon.exe"
+          Write-Host "ERROR: katalonc.exe not found at $katalonExe" -ForegroundColor Red
+          Write-Host "katalonc.exe is required for console mode. katalon.exe will open GUI." -ForegroundColor Red
+          exit 1
         } else {
-          Write-Host "Using katalonc.exe (console-only mode)"
+          Write-Host "Using katalonc.exe (console-only mode)" -ForegroundColor Green
         }
         
         # Test suite và paths
@@ -176,18 +189,22 @@ jobs:
             
             # Chạy và capture tất cả output (cả stdout và stderr)
             # QUAN TRỌNG: Dùng Start-Process với CreateNoWindow để đảm bảo không mở GUI
+            # Thêm logic để kill GUI process nếu nó mở ra
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
             $processInfo.Arguments = $katalonArgs -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
-            $processInfo.CreateNoWindow = $true
+            $processInfo.CreateNoWindow = $true  # QUAN TRỌNG: Không tạo cửa sổ
+            $processInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden  # Ẩn cửa sổ
             $processInfo.WorkingDirectory = $projectPath
             
-            # Set environment variables
+            # Set environment variables - QUAN TRỌNG: Phải set trước khi start
             $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
             $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
+            # Thêm biến để force headless
+            $processInfo.EnvironmentVariables['KATALON_NO_GUI'] = 'true'
             
             $process = New-Object System.Diagnostics.Process
             $process.StartInfo = $processInfo
@@ -212,8 +229,40 @@ jobs:
             $process.BeginOutputReadLine()
             $process.BeginErrorReadLine()
             
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process started (PID: $($process.Id))" -ForegroundColor Green
+            
+            # Monitor và kill GUI processes nếu chúng mở ra
+            $guiMonitorJob = Start-Job -ScriptBlock {
+              param($mainProcessId)
+              while ($true) {
+                Start-Sleep -Seconds 5
+                $guiProcesses = Get-Process | Where-Object {
+                  $_.ProcessName -like '*katalon*' -and
+                  $_.Id -ne $mainProcessId -and
+                  $_.MainWindowTitle -ne '' -and
+                  $_.Path -notlike '*katalonc.exe*'
+                }
+                if ($guiProcesses) {
+                  $guiProcesses | ForEach-Object {
+                    Write-Host "[GUI Monitor] Killing GUI process: $($_.ProcessName) (PID: $($_.Id))" -ForegroundColor Yellow
+                    Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+                  }
+                }
+                # Check if main process still running
+                try {
+                  $mainProc = Get-Process -Id $mainProcessId -ErrorAction Stop
+                } catch {
+                  break  # Main process exited, stop monitoring
+                }
+              }
+            } -ArgumentList $process.Id
+            
             # Đợi process hoàn thành (timeout 30 phút)
             $process.WaitForExit(1800000)
+            
+            # Stop GUI monitor job
+            Stop-Job -Job $guiMonitorJob -ErrorAction SilentlyContinue
+            Remove-Job -Job $guiMonitorJob -ErrorAction SilentlyContinue
             
             if (-not $process.HasExited) {
                 Write-Host "[WARNING] Process timeout, killing..." -ForegroundColor Yellow
