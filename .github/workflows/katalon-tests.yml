@@ -122,11 +122,13 @@ jobs:
         # QUAN TRỌNG: Khi dùng array với @ trong PowerShell, không cần quote trong array
         # PowerShell sẽ tự động escape spaces khi expand array
         # Browser type "Chrome (headless)" - không quote trong array, PowerShell sẽ tự xử lý
+        # Thêm -data @noDefault để đảm bảo không dùng workspace mặc định (tránh GUI mode)
         $katalonArgs = @(
           '-runMode=console'
           '-console'
           '-noSplash'
           '-consoleLog'
+          '-data', '@noDefault'
           "-projectPath=$projectPath"
           "-testSuitePath=$testSuitePathFormatted"
           '-executionProfile=default'
