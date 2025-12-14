@@ -257,8 +257,50 @@ jobs:
               }
             } -ArgumentList $process.Id
             
-            # Đợi process hoàn thành (timeout 30 phút)
-            $process.WaitForExit(1800000)
+            # Monitor process với status updates
+            $startTime = Get-Date
+            $lastStatusTime = Get-Date
+            $noOutputTimeout = 300  # 5 phút không có output = có thể treo
+            
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Monitoring process (checking every 10 seconds)..." -ForegroundColor Yellow
+            
+            while (-not $process.HasExited) {
+                $elapsed = (Get-Date) - $startTime
+                $elapsedSeconds = [int]$elapsed.TotalSeconds
+                
+                # Kiểm tra timeout tổng (30 phút)
+                if ($elapsedSeconds -ge 1800) {
+                    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] TIMEOUT: Process exceeded 30 minutes" -ForegroundColor Red
+                    $process.Kill()
+                    break
+                }
+                
+                # Status update mỗi 30 giây
+                $timeSinceLastStatus = (Get-Date) - $lastStatusTime
+                if ($timeSinceLastStatus.TotalSeconds -ge 30) {
+                    $minutes = [int]($elapsed.TotalMinutes)
+                    $seconds = [int]($elapsed.TotalSeconds % 60)
+                    $outputCount = ($outputBuilder.ToString() -split "`n").Count
+                    $errorCount = ($errorBuilder.ToString() -split "`n").Count
+                    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Status: Still running... (Elapsed: ${minutes}m ${seconds}s, PID: $($process.Id), Output lines: $outputCount, Error lines: $errorCount)" -ForegroundColor Gray
+                    $lastStatusTime = Get-Date
+                    
+                    # Kiểm tra child processes
+                    try {
+                        $childProcesses = Get-Process | Where-Object { $_.Parent.Id -eq $process.Id -ErrorAction SilentlyContinue }
+                        if ($childProcesses) {
+                            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Found $($childProcesses.Count) child process(es)" -ForegroundColor Cyan
+                        }
+                    } catch {
+                        # Ignore errors
+                    }
+                }
+                
+                Start-Sleep -Seconds 10
+            }
+            
+            # Đợi một chút để capture output cuối cùng
+            Start-Sleep -Seconds 2
             
             # Stop GUI monitor job
             Stop-Job -Job $guiMonitorJob -ErrorAction SilentlyContinue
