@@ -174,9 +174,23 @@ jobs:
             
             # Chạy và capture tất cả output (cả stdout và stderr)
             # QUAN TRỌNG: Dùng Start-Process với CreateNoWindow để đảm bảo không mở GUI
+            # Format arguments đúng cách: -data và @noDefault phải là một argument duy nhất
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
-            $processInfo.Arguments = $katalonArgs -join ' '
+            # Build arguments string manually để đảm bảo format đúng
+            $argList = New-Object System.Collections.Generic.List[string]
+            foreach ($arg in $katalonArgs) {
+                if ($arg -eq '-data') {
+                    # Skip -data, sẽ thêm cùng với @noDefault
+                    continue
+                } elseif ($arg -eq '@noDefault') {
+                    # Combine -data và @noDefault thành một argument
+                    $argList.Add('-data @noDefault')
+                } else {
+                    $argList.Add($arg)
+                }
+            }
+            $processInfo.Arguments = $argList -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
