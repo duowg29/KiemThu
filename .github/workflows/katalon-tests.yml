@@ -119,10 +119,15 @@ jobs:
         Write-Host ""
         
         # Xây dựng lệnh Katalon
-        # QUAN TRỌNG: -data @noDefault phải được format như một argument duy nhất
-        # Không dùng array với 2 phần tử riêng vì có thể gây duplicate
+        # QUAN TRỌNG: Dùng workspace tạm thời thay vì @noDefault để tránh lỗi
+        # Tạo workspace path tạm thời trong thư mục project
+        $tempWorkspace = Join-Path $projectPath ".katalon-workspace"
+        if (-not (Test-Path $tempWorkspace)) {
+            New-Item -ItemType Directory -Path $tempWorkspace -Force | Out-Null
+        }
+        
         $katalonArgs = @(
-          '-data @noDefault'
+          "-data=$tempWorkspace"
           '-runMode=console'
           '-console'
           '-noSplash'

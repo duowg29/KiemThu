@@ -4,10 +4,4 @@
    <name>default</name>
    <tag></tag>
    <defaultProfile>true</defaultProfile>
-   <GlobalVariableEntity>
-      <description></description>
-      <initValue>'http://localhost/CAMNEST/'</initValue>
-      <name>baseUrl</name>
-      <value>http://localhost/CAMNEST/</value>
-   </globalVariableEntity>
 </GlobalVariableEntities>
