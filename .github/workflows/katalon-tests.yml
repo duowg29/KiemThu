@@ -45,7 +45,6 @@ jobs:
         # Test suite và paths
         $testSuitePath = "Test Suites/UI/Navigation Testcases"
         $projectPath = $PWD -replace '\\', '/'
-        $testSuitePathFormatted = $testSuitePath -replace '\\', '/'
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
         $baseUrl = "http://localhost/CAMNEST/"
         
@@ -55,18 +54,35 @@ jobs:
           exit 1
         }
         
-        # Validate test suite path
+        # Tìm test suite file (có thể có hoặc không có extension .ts)
         $testSuiteFullPath = Join-Path $projectPath $testSuitePath
-        if (-not (Test-Path $testSuiteFullPath)) {
+        $testSuiteWithExt = "$testSuiteFullPath.ts"
+        
+        # Kiểm tra với extension .ts trước
+        if (Test-Path $testSuiteWithExt) {
+          $testSuiteFullPath = $testSuiteWithExt
+          Write-Host "Found test suite with .ts extension: $testSuiteFullPath"
+        } elseif (Test-Path $testSuiteFullPath) {
+          Write-Host "Found test suite without extension: $testSuiteFullPath"
+        } else {
           Write-Host "ERROR: Test suite path does not exist: $testSuiteFullPath" -ForegroundColor Red
+          Write-Host "Also checked: $testSuiteWithExt" -ForegroundColor Yellow
           Write-Host "Available test suites:" -ForegroundColor Yellow
           $testSuitesDir = Join-Path $projectPath "Test Suites"
           if (Test-Path $testSuitesDir) {
             Get-ChildItem -Path $testSuitesDir -Recurse -Filter "*.ts" | ForEach-Object {
-              Write-Host "  - $($_.FullName.Replace($projectPath, '').TrimStart('\'))"
+              $relativePath = $_.FullName.Replace($projectPath, '').TrimStart('\', '/')
+              Write-Host "  - $relativePath"
             }
           }
           exit 1
+        }
+        
+        # Format test suite path cho Katalon (relative path, không có extension .ts)
+        # Katalon yêu cầu path không có extension
+        $testSuitePathFormatted = $testSuitePath -replace '\\', '/'
+        if ($testSuitePathFormatted.EndsWith('.ts')) {
+          $testSuitePathFormatted = $testSuitePathFormatted.Substring(0, $testSuitePathFormatted.Length - 3)
         }
         
         # Validate project file
@@ -86,8 +102,8 @@ jobs:
         Write-Host "=========================================="
         Write-Host "Running Katalon tests..."
         Write-Host "Project: $projectPath"
-        Write-Host "Test Suite: $testSuitePath"
-        Write-Host "Test Suite Full Path: $testSuiteFullPath"
+        Write-Host "Test Suite (for Katalon): $testSuitePathFormatted"
+        Write-Host "Test Suite File Path: $testSuiteFullPath"
         Write-Host "Katalon Executable: $katalonExe"
         Write-Host "Report Folder: $reportFolder"
         Write-Host "Base URL: $baseUrl"
