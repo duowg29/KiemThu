@@ -119,13 +119,10 @@ jobs:
         Write-Host ""
         
         # Xây dựng lệnh Katalon
-        # QUAN TRỌNG: Khi dùng array với @ trong PowerShell, không cần quote trong array
-        # PowerShell sẽ tự động escape spaces khi expand array
-        # Browser type "Chrome (headless)" - không quote trong array, PowerShell sẽ tự xử lý
-        # Dùng -data @noDefault để đảm bảo không dùng workspace mặc định (tránh GUI mode)
-        # Lưu ý: -data phải đứng trước -runMode để đảm bảo workspace được set đúng
+        # QUAN TRỌNG: -data @noDefault phải được format như một argument duy nhất
+        # Không dùng array với 2 phần tử riêng vì có thể gây duplicate
         $katalonArgs = @(
-          '-data', '@noDefault'
+          '-data @noDefault'
           '-runMode=console'
           '-console'
           '-noSplash'
@@ -174,23 +171,9 @@ jobs:
             
             # Chạy và capture tất cả output (cả stdout và stderr)
             # QUAN TRỌNG: Dùng Start-Process với CreateNoWindow để đảm bảo không mở GUI
-            # Format arguments đúng cách: -data và @noDefault phải là một argument duy nhất
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
-            # Build arguments string manually để đảm bảo format đúng
-            $argList = New-Object System.Collections.Generic.List[string]
-            foreach ($arg in $katalonArgs) {
-                if ($arg -eq '-data') {
-                    # Skip -data, sẽ thêm cùng với @noDefault
-                    continue
-                } elseif ($arg -eq '@noDefault') {
-                    # Combine -data và @noDefault thành một argument
-                    $argList.Add('-data @noDefault')
-                } else {
-                    $argList.Add($arg)
-                }
-            }
-            $processInfo.Arguments = $argList -join ' '
+            $processInfo.Arguments = $katalonArgs -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
