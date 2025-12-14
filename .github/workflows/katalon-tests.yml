@@ -21,8 +21,9 @@ jobs:
     - name: Run Katalon Tests
       timeout-minutes: 30
       env:
-        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
-        KATALON_OPTS: '-noSplash -consoleLog'
+        JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true -Djava.awt.headless=true'
+        KATALON_OPTS: '-noSplash -consoleLog -noExit'
+        DISPLAY: ':0'
       run: |
         # Đường dẫn Katalon
         $KATALON_HOME = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
@@ -32,10 +33,13 @@ jobs:
           exit 1
         }
         
-        # Dùng katalonc.exe nếu có (console-only)
-        $katalonExe = "$KATALON_HOME\katalon.exe"
-        if (Test-Path "$KATALON_HOME\katalonc.exe") {
-          $katalonExe = "$KATALON_HOME\katalonc.exe"
+        # Ưu tiên dùng katalonc.exe (console-only, không mở GUI)
+        $katalonExe = "$KATALON_HOME\katalonc.exe"
+        if (-not (Test-Path $katalonExe)) {
+          Write-Host "katalonc.exe not found, using katalon.exe instead"
+          $katalonExe = "$KATALON_HOME\katalon.exe"
+        } else {
+          Write-Host "Using katalonc.exe (console-only mode)"
         }
         
         # Test suite và paths
@@ -50,39 +54,119 @@ jobs:
           New-Item -ItemType Directory -Path "Reports" -Force | Out-Null
         }
         
+        Write-Host "=========================================="
         Write-Host "Running Katalon tests..."
         Write-Host "Project: $projectPath"
         Write-Host "Test Suite: $testSuitePath"
+        Write-Host "Katalon Executable: $katalonExe"
+        Write-Host "=========================================="
         
-         # Set environment variables trước khi chạy
-         $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
-         $env:KATALON_OPTS = '-noSplash -consoleLog'
-         
-         # Chạy Katalon - để mở GUI cũng được, miễn chạy được test
-         Write-Host "Starting Katalon execution..."
-         Write-Host "Note: Warnings in logs are normal, tests will run after Katalon finishes loading"
-         
-         # Chạy và đợi hoàn thành
-         & $katalonExe `
-           -runMode=console `
-           -console `
-           -noSplash `
-           -consoleLog `
-           -projectPath="$projectPath" `
-           -testSuitePath="$testSuitePathFormatted" `
-           -executionProfile=default `
-           -browserType="Chrome (headless)" `
-           -g_baseUrl="$baseUrl" `
-           -reportFolder="$reportFolder" `
-           -retry=0
-         
-         $exitCode = $LASTEXITCODE
-         if ($null -eq $exitCode) { $exitCode = 0 }
-         
-         Write-Host "=========================================="
-         Write-Host "Katalon execution finished"
-         Write-Host "Exit code: $exitCode"
-         Write-Host "=========================================="
+        # Set environment variables trước khi chạy (đảm bảo headless)
+        $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+        $env:KATALON_OPTS = '-noSplash -consoleLog -noExit'
+        
+        Write-Host "Environment variables set:"
+        Write-Host "JAVA_OPTS: $env:JAVA_OPTS"
+        Write-Host "KATALON_OPTS: $env:KATALON_OPTS"
+        Write-Host ""
+        
+        # Xây dựng lệnh Katalon
+        $katalonArgs = @(
+          '-runMode=console',
+          '-console',
+          '-noSplash',
+          '-consoleLog',
+          "-projectPath=$projectPath",
+          "-testSuitePath=$testSuitePathFormatted",
+          '-executionProfile=default',
+          '-browserType=Chrome (headless)',
+          "-g_baseUrl=$baseUrl",
+          "-reportFolder=$reportFolder",
+          '-retry=0'
+        )
+        
+        Write-Host "Starting Katalon execution..."
+        Write-Host "Command: $katalonExe $($katalonArgs -join ' ')"
+        Write-Host "Note: This may take a while on slower machines. Please wait..."
+        Write-Host ""
+        
+        # Chạy Katalon với Start-Process để đảm bảo đợi process hoàn thành
+        # Sử dụng -Wait và -NoNewWindow để đảm bảo không mở cửa sổ mới và đợi hoàn thành
+        $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+        $processInfo.FileName = $katalonExe
+        $processInfo.Arguments = $katalonArgs -join ' '
+        $processInfo.UseShellExecute = $false
+        $processInfo.RedirectStandardOutput = $true
+        $processInfo.RedirectStandardError = $true
+        $processInfo.CreateNoWindow = $true
+        $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
+        $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
+        
+        $process = New-Object System.Diagnostics.Process
+        $process.StartInfo = $processInfo
+        
+        # Xử lý output real-time
+        $outputBuilder = New-Object System.Text.StringBuilder
+        $errorBuilder = New-Object System.Text.StringBuilder
+        
+        $script:outputData = ""
+        $script:errorData = ""
+        
+        $process.add_OutputDataReceived({
+          param($sender, $e)
+          if ($e.Data) {
+            $outputBuilder.AppendLine($e.Data) | Out-Null
+            Write-Host $e.Data
+          }
+        })
+        
+        $process.add_ErrorDataReceived({
+          param($sender, $e)
+          if ($e.Data) {
+            $errorBuilder.AppendLine($e.Data) | Out-Null
+            Write-Host $e.Data -ForegroundColor Yellow
+          }
+        })
+        
+        # Bắt đầu process
+        Write-Host "Launching Katalon process..."
+        $process.Start() | Out-Null
+        $process.BeginOutputReadLine()
+        $process.BeginErrorReadLine()
+        
+        # Đợi process hoàn thành với timeout
+        $timeoutMinutes = 25
+        $timeoutSeconds = $timeoutMinutes * 60
+        $processFinished = $process.WaitForExit($timeoutSeconds * 1000)
+        
+        if (-not $processFinished) {
+          Write-Host "ERROR: Process timeout after $timeoutMinutes minutes" -ForegroundColor Red
+          $process.Kill()
+          exit 1
+        }
+        
+        $exitCode = $process.ExitCode
+        
+        Write-Host ""
+        Write-Host "=========================================="
+        Write-Host "Katalon execution finished"
+        Write-Host "Exit code: $exitCode"
+        Write-Host "=========================================="
+        
+        # Kiểm tra kết quả
+        if ($exitCode -ne 0) {
+          Write-Host "WARNING: Katalon exited with code $exitCode" -ForegroundColor Yellow
+        } else {
+          Write-Host "SUCCESS: Tests completed successfully" -ForegroundColor Green
+        }
+        
+        # Kiểm tra xem có reports không
+        if (Test-Path "Reports") {
+          $reportFiles = Get-ChildItem -Path "Reports" -Recurse -File
+          Write-Host "Found $($reportFiles.Count) report file(s)"
+        }
+        
+        exit $exitCode
           
     - name: Upload Test Reports
       if: always()
