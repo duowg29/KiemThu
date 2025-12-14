@@ -215,13 +215,19 @@ jobs:
             
             $outputEvent = Register-ObjectEvent -InputObject $process -EventName OutputDataReceived -Action {
                 if ($EventArgs.Data) {
-                    [void]$Event.MessageData.AppendLine($EventArgs.Data)
+                    $line = $EventArgs.Data
+                    [void]$Event.MessageData.AppendLine($line)
+                    # QUAN TRỌNG: Hiển thị output real-time để biết process đang làm gì
+                    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $line" -ForegroundColor Cyan
                 }
             } -MessageData $outputBuilder
             
             $errorEvent = Register-ObjectEvent -InputObject $process -EventName ErrorDataReceived -Action {
                 if ($EventArgs.Data) {
-                    [void]$Event.MessageData.AppendLine($EventArgs.Data)
+                    $line = $EventArgs.Data
+                    [void]$Event.MessageData.AppendLine($line)
+                    # QUAN TRỌNG: Hiển thị errors real-time
+                    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: $line" -ForegroundColor Red
                 }
             } -MessageData $errorBuilder
             
