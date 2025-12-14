@@ -295,7 +295,14 @@ jobs:
                     
                     # Kiểm tra child processes
                     try {
-                        $childProcesses = Get-Process | Where-Object { $_.Parent.Id -eq $process.Id -ErrorAction SilentlyContinue }
+                        $allProcesses = Get-Process -ErrorAction SilentlyContinue
+                        $childProcesses = $allProcesses | Where-Object {
+                            try {
+                                $_.Parent.Id -eq $process.Id
+                            } catch {
+                                $false  # Ignore errors when accessing Parent property
+                            }
+                        }
                         if ($childProcesses) {
                             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Found $($childProcesses.Count) child process(es)" -ForegroundColor Cyan
                         }
