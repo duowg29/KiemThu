@@ -144,52 +144,122 @@ jobs:
         Push-Location $projectPath
         
         try {
-          # Chạy Katalon trực tiếp với & operator để dễ debug
-          # Điều này sẽ capture output và error tốt hơn
           Write-Host "Launching Katalon process from: $projectPath"
           Write-Host "Executable: $katalonExe"
           Write-Host "Arguments: $($katalonArgs -join ' ')"
           Write-Host ""
-          Write-Host "Starting Katalon execution (headless mode)..."
+          Write-Host "Starting Katalon execution (headless mode - NO GUI)..."
           Write-Host "This may take a while on slower machines. Please wait..."
           Write-Host ""
           
-          # Chạy và capture output với error handling tốt hơn
-          $ErrorActionPreference = 'Continue'
-          $allOutput = @()
-          $output = @()
-          $errors = @()
+          # Dùng Start-Process với CreateNoWindow để đảm bảo KHÔNG mở GUI
+          $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $processInfo.FileName = $katalonExe
+          $processInfo.Arguments = $katalonArgs -join ' '
+          $processInfo.UseShellExecute = $false
+          $processInfo.RedirectStandardOutput = $true
+          $processInfo.RedirectStandardError = $true
+          $processInfo.CreateNoWindow = $true  # QUAN TRỌNG: Không tạo cửa sổ
+          $processInfo.WorkingDirectory = $projectPath
           
-          try {
-            # Chạy Katalon và capture cả stdout và stderr
-            # Sử dụng script block để capture output đúng cách
-            $allOutput = & $katalonExe @katalonArgs 2>&1
+          # Set environment variables
+          $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
+          $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
+          
+          $process = New-Object System.Diagnostics.Process
+          $process.StartInfo = $processInfo
+          
+          # Capture output real-time
+          $script:output = New-Object System.Collections.ArrayList
+          $script:errors = New-Object System.Collections.ArrayList
+          $script:lastOutputTime = Get-Date
+          
+          # Event handlers để capture output real-time
+          $outputHandler = {
+            param($sender, $e)
+            if ($e.Data) {
+              $line = $e.Data
+              [void]$script:output.Add($line)
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $line" -ForegroundColor Cyan
+              $script:lastOutputTime = Get-Date
+            }
+          }
+          
+          $errorHandler = {
+            param($sender, $e)
+            if ($e.Data) {
+              $line = $e.Data
+              [void]$script:errors.Add($line)
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: $line" -ForegroundColor Red
+              $script:lastOutputTime = Get-Date
+            }
+          }
+          
+          $process.add_OutputDataReceived($outputHandler)
+          $process.add_ErrorDataReceived($errorHandler)
+          
+          # Bắt đầu process
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Starting Katalon process..." -ForegroundColor Green
+          $process.Start() | Out-Null
+          $process.BeginOutputReadLine()
+          $process.BeginErrorReadLine()
+          
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process started (PID: $($process.Id))" -ForegroundColor Green
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Monitoring process status..." -ForegroundColor Yellow
+          Write-Host ""
+          
+          # Monitor process với timeout và progress updates
+          $timeoutMinutes = 25
+          $timeoutSeconds = $timeoutMinutes * 60
+          $startTime = Get-Date
+          $lastStatusTime = Get-Date
+          $noOutputTimeout = 300  # 5 phút không có output = có thể treo
+          
+          while (-not $process.HasExited) {
+            $elapsed = (Get-Date) - $startTime
+            $elapsedSeconds = [int]$elapsed.TotalSeconds
             
-            # Phân loại output và errors
-            foreach ($line in $allOutput) {
-              if ($line -is [System.Management.Automation.ErrorRecord]) {
-                $errorStr = $line.ToString()
-                $errors += $errorStr
-                Write-Host $errorStr -ForegroundColor Red
-              } elseif ($null -ne $line) {
-                $output += $line
-                Write-Host $line
-              }
+            # Kiểm tra timeout tổng
+            if ($elapsedSeconds -ge $timeoutSeconds) {
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] TIMEOUT: Process exceeded $timeoutMinutes minutes" -ForegroundColor Red
+              $process.Kill()
+              $exitCode = 1
+              break
             }
             
-            $exitCode = $LASTEXITCODE
-            
-          } catch {
-            $errorMsg = $_.Exception.Message
-            $errors += $errorMsg
-            Write-Host "ERROR during execution: $errorMsg" -ForegroundColor Red
-            Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-            if ($_.Exception.InnerException) {
-              Write-Host "Inner Exception: $($_.Exception.InnerException.Message)" -ForegroundColor Red
+            # Kiểm tra timeout không có output
+            $timeSinceLastOutput = (Get-Date) - $lastOutputTime
+            if ($timeSinceLastOutput.TotalSeconds -ge $noOutputTimeout) {
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] WARNING: No output for $noOutputTimeout seconds. Process may be hung." -ForegroundColor Yellow
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process is still running (PID: $($process.Id)). Checking if it's responsive..." -ForegroundColor Yellow
             }
-            Write-Host "Stack Trace:" -ForegroundColor Red
-            Write-Host $_.ScriptStackTrace -ForegroundColor Red
+            
+            # Status update mỗi 30 giây
+            $timeSinceLastStatus = (Get-Date) - $lastStatusTime
+            if ($timeSinceLastStatus.TotalSeconds -ge 30) {
+              $minutes = [int]($elapsed.TotalMinutes)
+              $seconds = [int]($elapsed.TotalSeconds % 60)
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Status: Still running... (Elapsed: ${minutes}m ${seconds}s, PID: $($process.Id))" -ForegroundColor Gray
+              $lastStatusTime = Get-Date
+            }
+            
+            Start-Sleep -Seconds 2
+          }
+          
+          # Đợi một chút để capture output cuối cùng
+          Start-Sleep -Seconds 3
+          
+          if (-not $process.HasExited) {
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process did not exit properly. Forcing termination..." -ForegroundColor Red
+            $process.Kill()
             $exitCode = 1
+          } else {
+            $exitCode = $process.ExitCode
+            $elapsed = (Get-Date) - $startTime
+            $minutes = [int]($elapsed.TotalMinutes)
+            $seconds = [int]($elapsed.TotalSeconds % 60)
+            Write-Host ""
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process completed (Exit code: $exitCode, Duration: ${minutes}m ${seconds}s)" -ForegroundColor Green
           }
           
           # Nếu exit code null, set về 0
@@ -197,18 +267,27 @@ jobs:
             $exitCode = 0
           }
           
-          # Hiển thị errors nếu có
-          if ($errors.Count -gt 0) {
+          # Hiển thị summary
+          Write-Host ""
+          Write-Host "=== EXECUTION SUMMARY ===" -ForegroundColor Cyan
+          Write-Host "Output lines captured: $($script:output.Count)"
+          Write-Host "Error lines captured: $($script:errors.Count)"
+          
+          if ($script:errors.Count -gt 0) {
             Write-Host ""
             Write-Host "=== ERRORS CAPTURED ===" -ForegroundColor Red
-            $errors | ForEach-Object {
+            $script:errors | ForEach-Object {
               Write-Host $_ -ForegroundColor Red
             }
           }
           
+          # Để tương thích với code phía dưới
+          $outputLines = $script:output
+          $errorLines = $script:errors
+          
         } catch {
           Write-Host ""
-          Write-Host "ERROR: Exception occurred while running Katalon" -ForegroundColor Red
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: Exception occurred while running Katalon" -ForegroundColor Red
           Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
           Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
           Write-Host "Script Stack Trace:" -ForegroundColor Red
@@ -222,14 +301,12 @@ jobs:
           Pop-Location
         }
         
-        # Để tương thích với code phía dưới
-        $outputLines = @()
-        $errorLines = @()
-        if ($output) {
-          $outputLines = $output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] -and $_ -ne $null }
+        # Đảm bảo biến tồn tại cho code phía dưới
+        if (-not (Get-Variable -Name 'outputLines' -ErrorAction SilentlyContinue)) {
+          $outputLines = @()
         }
-        if ($errors) {
-          $errorLines = $errors
+        if (-not (Get-Variable -Name 'errorLines' -ErrorAction SilentlyContinue)) {
+          $errorLines = @()
         }
         
         Write-Host ""
