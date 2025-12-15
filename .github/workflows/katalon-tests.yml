@@ -100,7 +100,7 @@ jobs:
         Write-Host ""
         
         # Test suite và paths
-        $testSuitePath = "Test Suites/UI/Navigation Testcases"
+        $testSuitePath = "Test Suites/UI Testing"
         # Đảm bảo project path là absolute path
         $projectPath = (Resolve-Path $PWD).Path -replace '\\', '/'
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
