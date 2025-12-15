@@ -23,6 +23,7 @@ jobs:
       env:
         JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
         KATALON_OPTS: '-noSplash -consoleLog'
+        KATALON_API_KEY: ${{ secrets.KATALON_API_KEY }}  # Set KATALON_API_KEY in GitHub Secrets (Settings → Secrets → Actions)
       run: |
         # Đường dẫn KRE (Katalon Runtime Engine)
         $KRE_HOME = "E:\App\Katalon_Studio_Engine_Windows_64-10.4.2"
@@ -68,6 +69,35 @@ jobs:
         }
         
         Write-Host "Using KRE executable: $katalonExe" -ForegroundColor Green
+        
+        # Kiểm tra license activation
+        # KRE cần license activation - có thể dùng API key hoặc offline license
+        $katalonApiKey = $env:KATALON_API_KEY
+        $offlineLicensePath = "$env:USERPROFILE\.katalon\license"
+        
+        Write-Host ""
+        Write-Host "Checking license activation..." -ForegroundColor Yellow
+        if ($katalonApiKey) {
+          Write-Host "Using API key for license activation" -ForegroundColor Green
+        } elseif (Test-Path $offlineLicensePath) {
+          $licenseFiles = Get-ChildItem -Path $offlineLicensePath -File -ErrorAction SilentlyContinue
+          if ($licenseFiles) {
+            Write-Host "Found offline license files in: $offlineLicensePath" -ForegroundColor Green
+            $licenseFiles | ForEach-Object {
+              Write-Host "  - $($_.Name)" -ForegroundColor Gray
+            }
+          } else {
+            Write-Host "WARNING: License folder exists but no license files found" -ForegroundColor Yellow
+            Write-Host "KRE will attempt to activate but may fail without API key or valid license" -ForegroundColor Yellow
+          }
+        } else {
+          Write-Host "WARNING: No API key or offline license found" -ForegroundColor Yellow
+          Write-Host "KRE requires license activation. Options:" -ForegroundColor Yellow
+          Write-Host "  1. Set KATALON_API_KEY in GitHub Secrets" -ForegroundColor Yellow
+          Write-Host "  2. Place offline license files in: $offlineLicensePath" -ForegroundColor Yellow
+          Write-Host "KRE will attempt to run but may fail with activation error" -ForegroundColor Yellow
+        }
+        Write-Host ""
         
         # Test suite và paths
         $testSuitePath = "Test Suites/UI/Navigation Testcases"
@@ -166,6 +196,12 @@ jobs:
           "-reportFolder=$reportFolder"
           '-retry=0'
         )
+        
+        # Thêm API key nếu có
+        if ($katalonApiKey) {
+          $katalonArgs += "-apiKey=$katalonApiKey"
+          Write-Host "Added API key to KRE arguments" -ForegroundColor Green
+        }
         
         Write-Host "Starting KRE execution..."
         Write-Host "Note: This may take a while on slower machines. Please wait..."
