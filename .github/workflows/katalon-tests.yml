@@ -924,40 +924,102 @@ jobs:
           exit $exitCode
         }
           
-    - name: Upload Test Reports (Excel CSV only)
+    - name: Format and Prepare Excel Report
       if: always()
       run: |
         Write-Host "=========================================="
-        Write-Host "Preparing CSV report for upload"
+        Write-Host "Formatting CSV report for Excel"
         Write-Host "=========================================="
         
-        # Tìm tất cả CSV files trong Reports
+        # Tìm file report.csv chính
         $csvFiles = Get-ChildItem -Path "Reports" -Recurse -Filter "*.csv" -ErrorAction SilentlyContinue
+        $mainCsv = $csvFiles | Where-Object { $_.Name -eq 'report.csv' } | Select-Object -First 1
         
-        if ($csvFiles) {
-          Write-Host "Found $($csvFiles.Count) CSV file(s):" -ForegroundColor Green
-          $csvFiles | ForEach-Object {
-            Write-Host "  - $($_.FullName)" -ForegroundColor Cyan
-          }
-          
-          # Tìm file report.csv chính (thường ở root của Reports)
-          $mainCsv = $csvFiles | Where-Object { $_.Name -eq 'report.csv' } | Select-Object -First 1
-          if ($mainCsv) {
-            Write-Host ""
-            Write-Host "Main CSV report: $($mainCsv.FullName)" -ForegroundColor Green
-            Write-Host "File size: $([math]::Round($mainCsv.Length / 1KB, 2)) KB" -ForegroundColor Gray
-          }
-        } else {
-          Write-Host "WARNING: No CSV files found in Reports folder" -ForegroundColor Yellow
+        if (-not $mainCsv) {
+          Write-Host "WARNING: No report.csv found in Reports folder" -ForegroundColor Yellow
+          exit 0
         }
         
-    - name: Upload CSV Report
+        Write-Host "Found CSV report: $($mainCsv.FullName)" -ForegroundColor Green
+        
+        # Đọc và format CSV với UTF-8 BOM cho Excel
+        try {
+          Write-Host "Reading CSV report..." -ForegroundColor Cyan
+          
+          # Đọc file - thử nhiều encoding
+          $content = $null
+          $encodings = @('UTF8', 'Unicode', 'Default')
+          
+          foreach ($enc in $encodings) {
+            try {
+              $testContent = Get-Content $mainCsv.FullName -Encoding $enc -ErrorAction Stop
+              if ($testContent -and $testContent.Count -gt 0) {
+                $content = $testContent
+                Write-Host "Read with encoding: $enc ($($content.Count) lines)" -ForegroundColor Green
+                break
+              }
+            } catch {
+              continue
+            }
+          }
+          
+          if (-not $content) {
+            # Fallback: đọc raw bytes
+            $bytes = [System.IO.File]::ReadAllBytes($mainCsv.FullName)
+            $utf8 = [System.Text.Encoding]::UTF8
+            $content = $utf8.GetString($bytes) -split "`r?`n"
+            Write-Host "Read as raw bytes and decoded as UTF-8" -ForegroundColor Yellow
+          }
+          
+          # Tạo CSV mới với UTF-8 BOM (Excel sẽ hiểu đúng encoding và tiếng Việt)
+          $outputCsv = Join-Path "Reports" "test-results-formatted.csv"
+          
+          # UTF-8 với BOM cho Excel
+          $utf8WithBom = New-Object System.Text.UTF8Encoding $true
+          $writer = New-Object System.IO.StreamWriter($outputCsv, $false, $utf8WithBom)
+          
+          # Viết lại từng dòng (giữ nguyên format nhưng đảm bảo encoding đúng)
+          foreach ($line in $content) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+              $writer.WriteLine($line)
+            }
+          }
+          
+          $writer.Close()
+          
+          Write-Host "Created formatted CSV: $outputCsv" -ForegroundColor Green
+          $fileSize = (Get-Item $outputCsv).Length
+          Write-Host "File size: $([math]::Round($fileSize / 1KB, 2)) KB" -ForegroundColor Gray
+          
+          # Verify UTF-8 BOM
+          $bytes = [System.IO.File]::ReadAllBytes($outputCsv)
+          if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+            Write-Host "UTF-8 BOM encoding: OK (Excel will display correctly)" -ForegroundColor Green
+          } else {
+            Write-Host "Warning: UTF-8 BOM not detected" -ForegroundColor Yellow
+          }
+          
+        } catch {
+          Write-Host "ERROR: Failed to format CSV report" -ForegroundColor Red
+          Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+          
+          # Fallback: copy và convert encoding
+          try {
+            $outputCsv = Join-Path "Reports" "test-results-formatted.csv"
+            $utf8WithBom = New-Object System.Text.UTF8Encoding $true
+            $originalContent = Get-Content $mainCsv.FullName -Raw -Encoding UTF8
+            [System.IO.File]::WriteAllText($outputCsv, $originalContent, $utf8WithBom)
+            Write-Host "Created fallback CSV with UTF-8 BOM" -ForegroundColor Yellow
+          } catch {
+            Write-Host "Failed to create fallback CSV" -ForegroundColor Red
+          }
+        }
+        
+    - name: Upload Formatted CSV Report
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-csv
-        path: |
-          Reports/report.csv
-          Reports/**/report.csv
+        name: test-results-excel
+        path: Reports/test-results-formatted.csv
         if-no-files-found: warn
         retention-days: 30
