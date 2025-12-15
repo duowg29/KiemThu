@@ -910,11 +910,40 @@ jobs:
           exit $exitCode
         }
           
-    - name: Upload Test Reports
+    - name: Upload Test Reports (Excel CSV only)
+      if: always()
+      run: |
+        Write-Host "=========================================="
+        Write-Host "Preparing CSV report for upload"
+        Write-Host "=========================================="
+        
+        # Tìm tất cả CSV files trong Reports
+        $csvFiles = Get-ChildItem -Path "Reports" -Recurse -Filter "*.csv" -ErrorAction SilentlyContinue
+        
+        if ($csvFiles) {
+          Write-Host "Found $($csvFiles.Count) CSV file(s):" -ForegroundColor Green
+          $csvFiles | ForEach-Object {
+            Write-Host "  - $($_.FullName)" -ForegroundColor Cyan
+          }
+          
+          # Tìm file report.csv chính (thường ở root của Reports)
+          $mainCsv = $csvFiles | Where-Object { $_.Name -eq 'report.csv' } | Select-Object -First 1
+          if ($mainCsv) {
+            Write-Host ""
+            Write-Host "Main CSV report: $($mainCsv.FullName)" -ForegroundColor Green
+            Write-Host "File size: $([math]::Round($mainCsv.Length / 1KB, 2)) KB" -ForegroundColor Gray
+          }
+        } else {
+          Write-Host "WARNING: No CSV files found in Reports folder" -ForegroundColor Yellow
+        }
+        
+    - name: Upload CSV Report
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-reports
-        path: Reports/**
+        name: test-results-csv
+        path: |
+          Reports/report.csv
+          Reports/**/report.csv
         if-no-files-found: warn
         retention-days: 30
