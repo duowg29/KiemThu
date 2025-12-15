@@ -11,48 +11,63 @@ on:
 
 jobs:
   run-katalon-tests:
-    name: Run Katalon Studio Tests
+    name: Run Katalon Runtime Engine (KRE) Tests
     runs-on: self-hosted
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Run Katalon Tests
+    - name: Run Katalon Tests with KRE
       timeout-minutes: 30
       env:
         JAVA_OPTS: '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
         KATALON_OPTS: '-noSplash -consoleLog'
       run: |
-        # Đường dẫn Katalon
-        $KATALON_HOME = "$env:USERPROFILE\.katalon\packages\KSE-10.4.2"
+        # Đường dẫn KRE (Katalon Runtime Engine)
+        $KRE_HOME = "E:\App\Katalon_Studio_Engine_Windows_64-10.4.2"
         
-        if (-not (Test-Path "$KATALON_HOME\katalon.exe")) {
-          Write-Host "Katalon not found at $KATALON_HOME"
+        Write-Host "=========================================="
+        Write-Host "Using Katalon Runtime Engine (KRE)"
+        Write-Host "KRE Path: $KRE_HOME"
+        Write-Host "=========================================="
+        
+        # Kiểm tra KRE có tồn tại không
+        if (-not (Test-Path $KRE_HOME)) {
+          Write-Host "ERROR: KRE not found at $KRE_HOME" -ForegroundColor Red
+          Write-Host "Please verify the KRE installation path." -ForegroundColor Red
           exit 1
         }
         
-        # QUAN TRỌNG: Kill tất cả process Katalon GUI đang chạy trước khi chạy console mode
-        Write-Host "Killing any existing Katalon GUI processes..." -ForegroundColor Yellow
-        Get-Process | Where-Object { 
-          $_.ProcessName -like '*katalon*' -and 
-          $_.MainWindowTitle -ne '' -and
-          $_.Path -notlike '*katalonc.exe*'
-        } | ForEach-Object {
-          Write-Host "Killing GUI process: $($_.ProcessName) (PID: $($_.Id))" -ForegroundColor Yellow
-          Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
-        }
-        Start-Sleep -Seconds 2
+        # Tìm executable của KRE (có thể là katalonc.exe hoặc katalonc)
+        $katalonExe = $null
+        $possibleExes = @(
+          "$KRE_HOME\katalonc.exe",
+          "$KRE_HOME\katalonc",
+          "$KRE_HOME\katalon.exe"
+        )
         
-        # QUAN TRỌNG: Chỉ dùng katalonc.exe (console-only, KHÔNG BAO GIỜ dùng katalon.exe)
-        $katalonExe = "$KATALON_HOME\katalonc.exe"
-        if (-not (Test-Path $katalonExe)) {
-          Write-Host "ERROR: katalonc.exe not found at $katalonExe" -ForegroundColor Red
-          Write-Host "katalonc.exe is required for console mode. katalon.exe will open GUI." -ForegroundColor Red
-          exit 1
-        } else {
-          Write-Host "Using katalonc.exe (console-only mode)" -ForegroundColor Green
+        foreach ($exe in $possibleExes) {
+          if (Test-Path $exe) {
+            $katalonExe = $exe
+            Write-Host "Found KRE executable: $katalonExe" -ForegroundColor Green
+            break
+          }
         }
+        
+        if (-not $katalonExe) {
+          Write-Host "ERROR: KRE executable not found in $KRE_HOME" -ForegroundColor Red
+          Write-Host "Searched for:" -ForegroundColor Yellow
+          $possibleExes | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
+          Write-Host ""
+          Write-Host "Available files in KRE directory:" -ForegroundColor Yellow
+          Get-ChildItem -Path $KRE_HOME -File | Select-Object -First 10 | ForEach-Object {
+            Write-Host "  - $($_.Name)" -ForegroundColor Gray
+          }
+          exit 1
+        }
+        
+        Write-Host "Using KRE executable: $katalonExe" -ForegroundColor Green
         
         # Test suite và paths
         $testSuitePath = "Test Suites/UI/Navigation Testcases"
@@ -90,8 +105,8 @@ jobs:
           exit 1
         }
         
-        # Format test suite path cho Katalon (relative path, không có extension .ts)
-        # Katalon yêu cầu path không có extension
+        # Format test suite path cho KRE (relative path, không có extension .ts)
+        # KRE yêu cầu path không có extension
         $testSuitePathFormatted = $testSuitePath -replace '\\', '/'
         if ($testSuitePathFormatted.EndsWith('.ts')) {
           $testSuitePathFormatted = $testSuitePathFormatted.Substring(0, $testSuitePathFormatted.Length - 3)
@@ -112,17 +127,16 @@ jobs:
         }
         
         Write-Host "=========================================="
-        Write-Host "Running Katalon tests..."
+        Write-Host "Running KRE tests..."
         Write-Host "Project: $projectPath"
-        Write-Host "Test Suite (for Katalon): $testSuitePathFormatted"
+        Write-Host "Test Suite: $testSuitePathFormatted"
         Write-Host "Test Suite File Path: $testSuiteFullPath"
-        Write-Host "Katalon Executable: $katalonExe"
+        Write-Host "KRE Executable: $katalonExe"
         Write-Host "Report Folder: $reportFolder"
         Write-Host "Base URL: $baseUrl"
         Write-Host "=========================================="
         
         # Set environment variables trước khi chạy (đảm bảo headless)
-        # Theo đề xuất: đảm bảo headless mode hoàn toàn
         $env:JAVA_OPTS = '-Djava.awt.headless=true -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
         $env:KATALON_OPTS = '-noSplash -consoleLog'
         
@@ -131,9 +145,8 @@ jobs:
         Write-Host "KATALON_OPTS: $env:KATALON_OPTS"
         Write-Host ""
         
-        # Xây dựng lệnh Katalon
-        # QUAN TRỌNG: Dùng workspace tạm thời thay vì @noDefault để tránh lỗi
-        # Tạo workspace path tạm thời trong thư mục project
+        # Xây dựng lệnh KRE
+        # KRE sử dụng workspace tạm thời
         $tempWorkspace = Join-Path $projectPath ".katalon-workspace"
         if (-not (Test-Path $tempWorkspace)) {
             New-Item -ItemType Directory -Path $tempWorkspace -Force | Out-Null
@@ -154,7 +167,7 @@ jobs:
           '-retry=0'
         )
         
-        Write-Host "Starting Katalon execution..."
+        Write-Host "Starting KRE execution..."
         Write-Host "Note: This may take a while on slower machines. Please wait..."
         Write-Host ""
         
@@ -162,11 +175,11 @@ jobs:
         Push-Location $projectPath
         
         try {
-          Write-Host "Launching Katalon process from: $projectPath"
+          Write-Host "Launching KRE process from: $projectPath"
           Write-Host "Executable: $katalonExe"
           Write-Host "Arguments: $($katalonArgs -join ' ')"
           Write-Host ""
-          Write-Host "Starting Katalon execution (headless mode - NO GUI)..."
+          Write-Host "Starting KRE execution (headless mode)..."
           Write-Host "This may take a while on slower machines. Please wait..."
           Write-Host ""
           
@@ -179,7 +192,7 @@ jobs:
           
           try {
             # Chạy trực tiếp để xem output ngay
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Executing Katalon directly..." -ForegroundColor Green
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Executing KRE directly..." -ForegroundColor Green
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Command: $katalonExe $($katalonArgs -join ' ')" -ForegroundColor Gray
             Write-Host ""
             
@@ -188,23 +201,20 @@ jobs:
             $script:errors = New-Object System.Collections.ArrayList
             
             # Chạy và capture tất cả output (cả stdout và stderr)
-            # QUAN TRỌNG: Dùng Start-Process với CreateNoWindow để đảm bảo không mở GUI
-            # Thêm logic để kill GUI process nếu nó mở ra
+            # KRE là headless nên không cần lo về GUI
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
             $processInfo.Arguments = $katalonArgs -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
-            $processInfo.CreateNoWindow = $true  # QUAN TRỌNG: Không tạo cửa sổ
-            $processInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden  # Ẩn cửa sổ
+            $processInfo.CreateNoWindow = $true
+            $processInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
             $processInfo.WorkingDirectory = $projectPath
             
-            # Set environment variables - QUAN TRỌNG: Phải set trước khi start
+            # Set environment variables
             $processInfo.EnvironmentVariables['JAVA_OPTS'] = $env:JAVA_OPTS
             $processInfo.EnvironmentVariables['KATALON_OPTS'] = $env:KATALON_OPTS
-            # Thêm biến để force headless
-            $processInfo.EnvironmentVariables['KATALON_NO_GUI'] = 'true'
             
             $process = New-Object System.Diagnostics.Process
             $process.StartInfo = $processInfo
@@ -236,34 +246,10 @@ jobs:
             $process.BeginErrorReadLine()
             
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Process started (PID: $($process.Id))" -ForegroundColor Green
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Waiting for output (this may take 1-2 minutes for Katalon to initialize)..." -ForegroundColor Yellow
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Katalon is loading project and initializing. Please wait..." -ForegroundColor Yellow
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Waiting for output (this may take 1-2 minutes for KRE to initialize)..." -ForegroundColor Yellow
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] KRE is loading project and initializing. Please wait..." -ForegroundColor Yellow
             
-            # Monitor và kill GUI processes nếu chúng mở ra
-            $guiMonitorJob = Start-Job -ScriptBlock {
-              param($mainProcessId)
-              while ($true) {
-                Start-Sleep -Seconds 5
-                $guiProcesses = Get-Process | Where-Object {
-                  $_.ProcessName -like '*katalon*' -and
-                  $_.Id -ne $mainProcessId -and
-                  $_.MainWindowTitle -ne '' -and
-                  $_.Path -notlike '*katalonc.exe*'
-                }
-                if ($guiProcesses) {
-                  $guiProcesses | ForEach-Object {
-                    Write-Host "[GUI Monitor] Killing GUI process: $($_.ProcessName) (PID: $($_.Id))" -ForegroundColor Yellow
-                    Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
-                  }
-                }
-                # Check if main process still running
-                try {
-                  $mainProc = Get-Process -Id $mainProcessId -ErrorAction Stop
-                } catch {
-                  break  # Main process exited, stop monitoring
-                }
-              }
-            } -ArgumentList $process.Id
+            # KRE không có GUI nên không cần monitor GUI processes
             
             # Monitor process với status updates
             $startTime = Get-Date
@@ -327,10 +313,6 @@ jobs:
             # Đợi một chút để capture output cuối cùng
             Start-Sleep -Seconds 2
             
-            # Stop GUI monitor job
-            Stop-Job -Job $guiMonitorJob -ErrorAction SilentlyContinue
-            Remove-Job -Job $guiMonitorJob -ErrorAction SilentlyContinue
-            
             if (-not $process.HasExited) {
                 Write-Host "[WARNING] Process timeout, killing..." -ForegroundColor Yellow
                 $process.Kill()
@@ -342,6 +324,19 @@ jobs:
             # Lấy output
             $allDirectOutput = $outputBuilder.ToString() -split "`n"
             $allDirectErrors = $errorBuilder.ToString() -split "`n"
+            
+            # QUAN TRỌNG: Hiển thị errors ngay sau khi process exit
+            if ($allDirectErrors -and $allDirectErrors.Count -gt 0) {
+                Write-Host ""
+                Write-Host "========================================" -ForegroundColor Red
+                Write-Host "ERRORS FOUND ($($allDirectErrors.Count) lines):" -ForegroundColor Red
+                Write-Host "========================================" -ForegroundColor Red
+                $allDirectErrors | Where-Object { $null -ne $_ -and $_.Trim() -ne '' } | ForEach-Object {
+                    Write-Host "[ERROR] $_" -ForegroundColor Red
+                }
+                Write-Host "========================================" -ForegroundColor Red
+                Write-Host ""
+            }
             
             # Cleanup events
             Unregister-Event -SourceIdentifier $outputEvent.Name -ErrorAction SilentlyContinue
@@ -380,21 +375,21 @@ jobs:
             # Nếu không có output nhưng có exit code lỗi, cảnh báo
             if ($script:output.Count -eq 0 -and $exitCode -ne 0) {
               Write-Host "[$(Get-Date -Format 'HH:mm:ss')] WARNING: No output captured but exit code is $exitCode" -ForegroundColor Yellow
-              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] This might indicate Katalon failed to start or output was not captured" -ForegroundColor Yellow
+              Write-Host "[$(Get-Date -Format 'HH:mm:ss')] This might indicate KRE failed to start or output was not captured" -ForegroundColor Yellow
             }
             
           } catch {
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Direct execution exception: $($_.Exception.Message)" -ForegroundColor Yellow
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Trying Start-Process method as fallback..." -ForegroundColor Yellow
             
-            # Fallback: Dùng Start-Process với CreateNoWindow để đảm bảo KHÔNG mở GUI
+            # Fallback: Dùng Start-Process với CreateNoWindow
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
             $processInfo.Arguments = $katalonArgs -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
-            $processInfo.CreateNoWindow = $true  # QUAN TRỌNG: Không tạo cửa sổ
+            $processInfo.CreateNoWindow = $true
             $processInfo.WorkingDirectory = $projectPath
             
             # Set environment variables
@@ -434,7 +429,7 @@ jobs:
             $process.add_ErrorDataReceived($errorHandler)
             
             # Bắt đầu process
-            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Starting Katalon process..." -ForegroundColor Green
+            Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Starting KRE process..." -ForegroundColor Green
             
             try {
               $process.Start() | Out-Null
@@ -536,24 +531,24 @@ jobs:
             
           # Hiển thị output nếu có
           if ($script:output.Count -gt 0) {
-            Write-Host "=== KATALON OUTPUT (ALL $($script:output.Count) lines) ===" -ForegroundColor Cyan
+            Write-Host "=== KRE OUTPUT (ALL $($script:output.Count) lines) ===" -ForegroundColor Cyan
             $script:output | ForEach-Object {
               Write-Host $_
             }
           } else {
-            Write-Host "WARNING: No output captured from Katalon!" -ForegroundColor Yellow
+            Write-Host "WARNING: No output captured from KRE!" -ForegroundColor Yellow
             Write-Host "This might indicate:" -ForegroundColor Yellow
             Write-Host "  1. Process exited too quickly" -ForegroundColor Yellow
             Write-Host "  2. Output was not redirected properly" -ForegroundColor Yellow
-            Write-Host "  3. Katalon failed to start" -ForegroundColor Yellow
+            Write-Host "  3. KRE failed to start" -ForegroundColor Yellow
             Write-Host ""
-            Write-Host "Attempting to check Katalon logs..." -ForegroundColor Yellow
+            Write-Host "Attempting to check KRE logs..." -ForegroundColor Yellow
             
-            # Kiểm tra log files của Katalon
+            # Kiểm tra log files của KRE
             $logPaths = @(
               "$projectPath\Logs",
               "$env:USERPROFILE\.katalon\logs",
-              "$KATALON_HOME\configuration\org.eclipse.osgi",
+              "$KRE_HOME\configuration\org.eclipse.osgi",
               "$env:USERPROFILE\.katalon\workspace\.metadata\.log"
             )
             
@@ -584,10 +579,20 @@ jobs:
             
             if ($script:errors.Count -gt 0) {
               Write-Host ""
-              Write-Host "=== ERRORS CAPTURED ===" -ForegroundColor Red
+              Write-Host "========================================" -ForegroundColor Red
+              Write-Host "=== ALL ERRORS CAPTURED ($($script:errors.Count) lines) ===" -ForegroundColor Red
+              Write-Host "========================================" -ForegroundColor Red
               $script:errors | ForEach-Object {
-                Write-Host $_ -ForegroundColor Red
+                Write-Host "ERROR: $_" -ForegroundColor Red
               }
+              Write-Host "========================================" -ForegroundColor Red
+              Write-Host ""
+              Write-Host "These errors may indicate:" -ForegroundColor Yellow
+              Write-Host "  1. KRE configuration issues" -ForegroundColor Yellow
+              Write-Host "  2. Project/test suite problems" -ForegroundColor Yellow
+              Write-Host "  3. Missing dependencies or files" -ForegroundColor Yellow
+              Write-Host "  4. Browser/Chrome driver issues" -ForegroundColor Yellow
+              Write-Host ""
             }
             
             # Nếu exit code 2, hiển thị thông tin thêm
@@ -602,7 +607,7 @@ jobs:
               Write-Host "Please check:" -ForegroundColor Yellow
               Write-Host "  1. Project path: $projectPath" -ForegroundColor Yellow
               Write-Host "  2. Test suite path: $testSuitePathFormatted" -ForegroundColor Yellow
-              Write-Host "  3. Katalon executable: $katalonExe" -ForegroundColor Yellow
+              Write-Host "  3. KRE executable: $katalonExe" -ForegroundColor Yellow
               Write-Host "  4. Check if project file (.prj) exists" -ForegroundColor Yellow
             }
             
@@ -613,7 +618,7 @@ jobs:
           
         } catch {
           Write-Host ""
-          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: Exception occurred while running Katalon" -ForegroundColor Red
+          Write-Host "[$(Get-Date -Format 'HH:mm:ss')] ERROR: Exception occurred while running KRE" -ForegroundColor Red
           Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
           Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
           Write-Host "Script Stack Trace:" -ForegroundColor Red
@@ -637,28 +642,28 @@ jobs:
         
         Write-Host ""
         Write-Host "=========================================="
-        Write-Host "Katalon execution finished"
+        Write-Host "KRE execution finished"
         Write-Host "Exit code: $exitCode"
         Write-Host "=========================================="
         
         # Hiển thị output và error nếu có
         if ($outputLines.Count -gt 0) {
           Write-Host ""
-          Write-Host "=== KATALON OUTPUT (last 50 lines) ===" -ForegroundColor Cyan
+          Write-Host "=== KRE OUTPUT (last 50 lines) ===" -ForegroundColor Cyan
           $outputLines | Select-Object -Last 50 | ForEach-Object { Write-Host $_ }
         }
         
         if ($errorLines.Count -gt 0) {
           Write-Host ""
-          Write-Host "=== KATALON ERRORS ===" -ForegroundColor Red
+          Write-Host "=== KRE ERRORS ===" -ForegroundColor Red
           $errorLines | ForEach-Object { Write-Host $_ -ForegroundColor Red }
         }
         
-        # Kiểm tra log files của Katalon
+        # Kiểm tra log files của KRE
         $logDirs = @(
           "$projectPath\Logs",
           "$env:USERPROFILE\.katalon\logs",
-          "$KATALON_HOME\configuration\org.eclipse.osgi"
+          "$KRE_HOME\configuration\org.eclipse.osgi"
         )
         
         foreach ($logDir in $logDirs) {
@@ -690,7 +695,7 @@ jobs:
         # Kiểm tra kết quả
         if ($exitCode -ne 0) {
           Write-Host ""
-          Write-Host "ERROR: Katalon exited with code $exitCode" -ForegroundColor Red
+          Write-Host "ERROR: KRE exited with code $exitCode" -ForegroundColor Red
           Write-Host "Common exit codes:" -ForegroundColor Yellow
           Write-Host "  0 = Success"
           Write-Host "  1 = General error"
@@ -700,7 +705,7 @@ jobs:
           Write-Host "Please check the logs above for details." -ForegroundColor Yellow
         } else {
           Write-Host ""
-          Write-Host "SUCCESS: Tests completed successfully" -ForegroundColor Green
+          Write-Host "SUCCESS: Tests completed successfully with KRE" -ForegroundColor Green
         }
         
         # Kiểm tra xem có reports không
