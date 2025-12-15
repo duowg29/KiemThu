@@ -101,14 +101,34 @@ jobs:
         
         # Test suite và paths
         $testSuitePath = "Test Suites/UI/Navigation Testcases"
-        $projectPath = $PWD -replace '\\', '/'
+        # Đảm bảo project path là absolute path
+        $projectPath = (Resolve-Path $PWD).Path -replace '\\', '/'
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
         $baseUrl = "http://localhost/CAMNEST/"
+        
+        Write-Host ""
+        Write-Host "Current working directory: $PWD" -ForegroundColor Cyan
+        Write-Host "Resolved project path: $projectPath" -ForegroundColor Cyan
         
         # Validate project path
         if (-not (Test-Path $projectPath)) {
           Write-Host "ERROR: Project path does not exist: $projectPath" -ForegroundColor Red
+          Write-Host "Current directory: $PWD" -ForegroundColor Yellow
           exit 1
+        }
+        
+        # Kiểm tra project file (.prj) - QUAN TRỌNG cho KRE
+        $projectFile = Get-ChildItem -Path $projectPath -Filter "*.prj" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $projectFile) {
+          Write-Host "ERROR: No .prj file found in project directory: $projectPath" -ForegroundColor Red
+          Write-Host "KRE requires a valid Katalon project with .prj file" -ForegroundColor Red
+          Write-Host "Available files in project directory:" -ForegroundColor Yellow
+          Get-ChildItem -Path $projectPath -File | Select-Object -First 10 | ForEach-Object {
+            Write-Host "  - $($_.Name)" -ForegroundColor Gray
+          }
+          exit 1
+        } else {
+          Write-Host "Found project file: $($projectFile.Name)" -ForegroundColor Green
         }
         
         # Tìm test suite file (có thể có hoặc không có extension .ts)
@@ -142,15 +162,6 @@ jobs:
           $testSuitePathFormatted = $testSuitePathFormatted.Substring(0, $testSuitePathFormatted.Length - 3)
         }
         
-        # Validate project file
-        $projectFile = Join-Path $projectPath "*.prj"
-        $prjFiles = Get-ChildItem -Path $projectFile -ErrorAction SilentlyContinue
-        if (-not $prjFiles) {
-          Write-Host "WARNING: No .prj file found in project directory" -ForegroundColor Yellow
-        } else {
-          Write-Host "Found project file: $($prjFiles[0].Name)"
-        }
-        
         # Tạo thư mục Reports
         if (-not (Test-Path "Reports")) {
           New-Item -ItemType Directory -Path "Reports" -Force | Out-Null
@@ -176,14 +187,17 @@ jobs:
         Write-Host ""
         
         # Xây dựng lệnh KRE
-        # KRE sử dụng workspace tạm thời
+        # KRE có thể cần workspace riêng hoặc dùng @noDefault
+        # Thử dùng @noDefault trước, nếu không được thì dùng workspace path
         $tempWorkspace = Join-Path $projectPath ".katalon-workspace"
         if (-not (Test-Path $tempWorkspace)) {
             New-Item -ItemType Directory -Path $tempWorkspace -Force | Out-Null
+            Write-Host "Created workspace directory: $tempWorkspace" -ForegroundColor Green
         }
         
+        # KRE arguments - thử dùng -data @noDefault trước
         $katalonArgs = @(
-          "-data=$tempWorkspace"
+          '-data', '@noDefault'  # Dùng @noDefault để tránh workspace conflicts
           '-runMode=console'
           '-console'
           '-noSplash'
