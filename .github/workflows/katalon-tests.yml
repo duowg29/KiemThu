@@ -781,34 +781,92 @@ jobs:
           }
         }
         
-        # Kiểm tra kết quả
-        if ($exitCode -ne 0) {
-          Write-Host ""
-          Write-Host "ERROR: KRE exited with code $exitCode" -ForegroundColor Red
-          Write-Host "Common exit codes:" -ForegroundColor Yellow
-          Write-Host "  0 = Success"
-          Write-Host "  1 = General error"
-          Write-Host "  2 = Configuration/Project error"
-          Write-Host "  3 = Test execution error"
-          Write-Host ""
-          Write-Host "Please check the logs above for details." -ForegroundColor Yellow
-        } else {
-          Write-Host ""
-          Write-Host "SUCCESS: Tests completed successfully with KRE" -ForegroundColor Green
-        }
+        # Kiểm tra kết quả và phân tích reports
+        Write-Host ""
+        Write-Host "=========================================="
+        Write-Host "ANALYZING TEST RESULTS"
+        Write-Host "=========================================="
         
         # Kiểm tra xem có reports không
         if (Test-Path "Reports") {
           $reportFiles = Get-ChildItem -Path "Reports" -Recurse -File
           Write-Host ""
           Write-Host "Found $($reportFiles.Count) report file(s):" -ForegroundColor Cyan
-          $reportFiles | ForEach-Object {
-            Write-Host "  - $($_.FullName)"
+          
+          # Tìm HTML report để phân tích
+          $htmlReports = $reportFiles | Where-Object { $_.Extension -eq '.html' -and $_.Name -eq 'report.html' }
+          if ($htmlReports) {
+            $htmlReport = $htmlReports | Select-Object -First 1
+            Write-Host ""
+            Write-Host "Main HTML Report: $($htmlReport.FullName)" -ForegroundColor Green
+          }
+          
+          # Tìm JUnit report để phân tích
+          $junitReports = $reportFiles | Where-Object { $_.Name -eq 'JUnit_Report.xml' }
+          if ($junitReports) {
+            $junitReport = $junitReports | Select-Object -First 1
+            Write-Host "JUnit Report: $($junitReport.FullName)" -ForegroundColor Green
+            
+            # Đọc JUnit report để lấy test results
+            try {
+              [xml]$junitXml = Get-Content $junitReport.FullName -ErrorAction SilentlyContinue
+              if ($junitXml) {
+                $testsuites = $junitXml.testsuites
+                if ($testsuites) {
+                  $totalTests = $testsuites.tests
+                  $failures = $testsuites.failures
+                  $errors = $testsuites.errors
+                  $skipped = $testsuites.skipped
+                  
+                  Write-Host ""
+                  Write-Host "Test Results Summary:" -ForegroundColor Cyan
+                  Write-Host "  Total Tests: $totalTests" -ForegroundColor $(if ($failures -eq 0 -and $errors -eq 0) { "Green" } else { "Yellow" })
+                  Write-Host "  Failures: $failures" -ForegroundColor $(if ($failures -eq 0) { "Green" } else { "Red" })
+                  Write-Host "  Errors: $errors" -ForegroundColor $(if ($errors -eq 0) { "Green" } else { "Red" })
+                  Write-Host "  Skipped: $skipped" -ForegroundColor Yellow
+                  
+                  if ($failures -gt 0 -or $errors -gt 0) {
+                    Write-Host ""
+                    Write-Host "NOTE: Exit code 1 is expected when tests fail." -ForegroundColor Yellow
+                    Write-Host "This is normal behavior - tests ran but some failed." -ForegroundColor Yellow
+                  }
+                }
+              }
+            } catch {
+              Write-Host "Could not parse JUnit report: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
           }
         } else {
           Write-Host ""
           Write-Host "WARNING: Reports folder not found or empty" -ForegroundColor Yellow
         }
+        
+        # Phân tích exit code
+        Write-Host ""
+        Write-Host "=========================================="
+        if ($exitCode -eq 0) {
+          Write-Host "SUCCESS: Tests completed successfully with KRE" -ForegroundColor Green
+          Write-Host "Exit code: $exitCode (Success)" -ForegroundColor Green
+        } elseif ($exitCode -eq 1) {
+          Write-Host "EXIT CODE 1: Tests executed but may have failures or warnings" -ForegroundColor Yellow
+          Write-Host "Exit code 1 can mean:" -ForegroundColor Yellow
+          Write-Host "  - Some test cases failed (check reports above)" -ForegroundColor Yellow
+          Write-Host "  - Warnings from KRE (e.g., AI bundle warnings - can be ignored)" -ForegroundColor Yellow
+          Write-Host "  - General execution issues" -ForegroundColor Yellow
+          Write-Host ""
+          Write-Host "Check the reports above for detailed test results." -ForegroundColor Cyan
+        } elseif ($exitCode -eq 2) {
+          Write-Host "ERROR: KRE exited with code $exitCode (Configuration/Project error)" -ForegroundColor Red
+          Write-Host "Common causes:" -ForegroundColor Yellow
+          Write-Host "  - Invalid project path or test suite path" -ForegroundColor Yellow
+          Write-Host "  - Missing required files or dependencies" -ForegroundColor Yellow
+          Write-Host "  - Project configuration issues" -ForegroundColor Yellow
+        } elseif ($exitCode -eq 3) {
+          Write-Host "ERROR: KRE exited with code $exitCode (Test execution error)" -ForegroundColor Red
+        } else {
+          Write-Host "ERROR: KRE exited with code $exitCode" -ForegroundColor Red
+        }
+        Write-Host "=========================================="
         
         # Exit với code tương ứng
         if ($exitCode -ne 0) {
