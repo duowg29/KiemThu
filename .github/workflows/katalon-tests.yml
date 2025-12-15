@@ -196,6 +196,8 @@ jobs:
         }
         
         # KRE arguments - thử dùng -data @noDefault trước
+        # QUAN TRỌNG: Test suite path có khoảng trắng - KRE yêu cầu path không có quotes
+        # Nhưng khi join arguments, PowerShell sẽ tự động xử lý spaces
         $katalonArgs = @(
           '-data', '@noDefault'  # Dùng @noDefault để tránh workspace conflicts
           '-runMode=console'
@@ -203,13 +205,17 @@ jobs:
           '-noSplash'
           '-consoleLog'
           "-projectPath=$projectPath"
-          "-testSuitePath=$testSuitePathFormatted"
+          "-testSuitePath=$testSuitePathFormatted"  # Path với spaces - PowerShell sẽ tự động quote khi join
           '-executionProfile=default'
           '-browserType=Chrome (headless)'
           "-g_baseUrl=$baseUrl"
           "-reportFolder=$reportFolder"
           '-retry=0'
         )
+        
+        Write-Host "DEBUG: Test suite path formatted: '$testSuitePathFormatted'" -ForegroundColor Cyan
+        Write-Host "DEBUG: Arguments before join:" -ForegroundColor Cyan
+        $katalonArgs | ForEach-Object { Write-Host "  [$_]" -ForegroundColor Gray }
         
         # Thêm API key nếu có
         if ($katalonApiKey) {
@@ -252,9 +258,28 @@ jobs:
             
             # Chạy và capture tất cả output (cả stdout và stderr)
             # KRE là headless nên không cần lo về GUI
+            # QUAN TRỌNG: Build arguments string thủ công để xử lý spaces đúng cách
+            $argumentsString = $katalonArgs | ForEach-Object {
+              if ($_ -match '^-[^=]+=') {
+                # Argument có format -key=value
+                $key, $value = $_ -split '=', 2
+                if ($value -match '\s') {
+                  # Value có spaces, cần quote
+                  "$key=`"$value`""
+                } else {
+                  $_
+                }
+              } else {
+                # Argument đơn giản
+                $_
+              }
+            } | ForEach-Object { $_ }
+            
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
-            $processInfo.Arguments = $katalonArgs -join ' '
+            $processInfo.Arguments = $argumentsString -join ' '
+            
+            Write-Host "[DEBUG] Final arguments string: $($processInfo.Arguments)" -ForegroundColor Cyan
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
@@ -433,9 +458,23 @@ jobs:
             Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Trying Start-Process method as fallback..." -ForegroundColor Yellow
             
             # Fallback: Dùng Start-Process với CreateNoWindow
+            # Build arguments string với proper escaping cho spaces
+            $argumentsString = $katalonArgs | ForEach-Object {
+              if ($_ -match '^-[^=]+=') {
+                $key, $value = $_ -split '=', 2
+                if ($value -match '\s') {
+                  "$key=`"$value`""
+                } else {
+                  $_
+                }
+              } else {
+                $_
+              }
+            }
+            
             $processInfo = New-Object System.Diagnostics.ProcessStartInfo
             $processInfo.FileName = $katalonExe
-            $processInfo.Arguments = $katalonArgs -join ' '
+            $processInfo.Arguments = $argumentsString -join ' '
             $processInfo.UseShellExecute = $false
             $processInfo.RedirectStandardOutput = $true
             $processInfo.RedirectStandardError = $true
