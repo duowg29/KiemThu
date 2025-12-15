@@ -35,6 +35,8 @@ Hiện tại dòng này đã được comment, bạn chỉ cần xóa dấu `#` 
 
 ---
 
+
+
 ## 📄 CÁCH 2: SỬ DỤNG OFFLINE LICENSE
 
 ### Bước 1: Lấy Offline License từ Katalon Studio
