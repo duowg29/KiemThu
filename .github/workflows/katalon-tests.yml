@@ -100,7 +100,8 @@ jobs:
         Write-Host ""
         
         # Test suite và paths
-        $testSuitePath = "Test Suites/UI Testing"
+        # QUAN TRỌNG: Đảm bảo test suite path đúng với tên trong project
+        $testSuitePath = "Test Suites/UI/Navigation Testcases"
         # Đảm bảo project path là absolute path
         $projectPath = (Resolve-Path $PWD).Path -replace '\\', '/'
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
@@ -144,13 +145,26 @@ jobs:
         } else {
           Write-Host "ERROR: Test suite path does not exist: $testSuiteFullPath" -ForegroundColor Red
           Write-Host "Also checked: $testSuiteWithExt" -ForegroundColor Yellow
-          Write-Host "Available test suites:" -ForegroundColor Yellow
+          Write-Host ""
+          Write-Host "Available test suites in project:" -ForegroundColor Yellow
           $testSuitesDir = Join-Path $projectPath "Test Suites"
           if (Test-Path $testSuitesDir) {
-            Get-ChildItem -Path $testSuitesDir -Recurse -Filter "*.ts" | ForEach-Object {
-              $relativePath = $_.FullName.Replace($projectPath, '').TrimStart('\', '/')
-              Write-Host "  - $relativePath"
+            $allTestSuites = Get-ChildItem -Path $testSuitesDir -Recurse -Filter "*.ts" -ErrorAction SilentlyContinue
+            if ($allTestSuites) {
+              Write-Host "Found $($allTestSuites.Count) test suite(s):" -ForegroundColor Cyan
+              $allTestSuites | ForEach-Object {
+                $relativePath = $_.FullName.Replace($projectPath, '').TrimStart('\', '/')
+                # Remove .ts extension for display
+                $displayPath = $relativePath -replace '\.ts$', ''
+                Write-Host "  - $displayPath" -ForegroundColor Gray
+              }
+              Write-Host ""
+              Write-Host "Please update testSuitePath in workflow to one of the above paths." -ForegroundColor Yellow
+            } else {
+              Write-Host "  No test suites found in Test Suites directory" -ForegroundColor Yellow
             }
+          } else {
+            Write-Host "  Test Suites directory not found" -ForegroundColor Yellow
           }
           exit 1
         }
