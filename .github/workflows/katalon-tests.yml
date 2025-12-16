@@ -852,26 +852,28 @@ jobs:
                     try {
                       $testCases = $junitXml.SelectNodes("//testcase")
                       foreach ($testCase in $testCases) {
-                        $failure = $testCase.SelectSingleNode("failure")
-                        $error = $testCase.SelectSingleNode("error")
-                        if ($failure -or $error) {
+                        $failureNode = $testCase.SelectSingleNode("failure")
+                        $errorNode = $testCase.SelectSingleNode("error")
+                        if ($failureNode -or $errorNode) {
                           $testName = $testCase.name
                           $className = $testCase.classname
                           Write-Host ""
                           Write-Host "Test: $testName" -ForegroundColor Yellow
                           Write-Host "Class: $className" -ForegroundColor Gray
-                          if ($failure) {
-                            Write-Host "Failure Message: $($failure.message)" -ForegroundColor Red
-                            $failureText = $failure.'#text'
+                          if ($failureNode) {
+                            $failureMsg = $failureNode.message
+                            Write-Host "Failure Message: $failureMsg" -ForegroundColor Red
+                            $failureText = $failureNode.'#text'
                             if ($failureText) {
                               $failureLines = ($failureText -split "`n") | Select-Object -First 10
                               Write-Host "Failure Details (first 10 lines):" -ForegroundColor Red
                               $failureLines | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
                             }
                           }
-                          if ($error) {
-                            Write-Host "Error Message: $($error.message)" -ForegroundColor Red
-                            $errorText = $error.'#text'
+                          if ($errorNode) {
+                            $errorMsg = $errorNode.message
+                            Write-Host "Error Message: $errorMsg" -ForegroundColor Red
+                            $errorText = $errorNode.'#text'
                             if ($errorText) {
                               $errorLines = ($errorText -split "`n") | Select-Object -First 10
                               Write-Host "Error Details (first 10 lines):" -ForegroundColor Red

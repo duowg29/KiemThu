@@ -53,8 +53,10 @@ class BrowserSetup {
 					lowerStepName.contains('navigatetourl') ||
 					lowerStepName.contains('navigateto')) {
 					// Đợi browser sẵn sàng (tăng thời gian đợi)
-					Thread.sleep(800)
+					Thread.sleep(1000)
 					safeMaximizeWindow("after: $stepName")
+					// Đợi thêm một chút để window maximize hoàn tất
+					Thread.sleep(500)
 				} else {
 					// Với các step khác, vẫn thử maximize (nếu browser đã mở)
 					safeMaximizeWindow()
