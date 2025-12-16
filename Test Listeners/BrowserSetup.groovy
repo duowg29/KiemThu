@@ -19,10 +19,8 @@ import com.kms.katalon.core.annotation.BeforeTestCase
 import com.kms.katalon.core.annotation.BeforeTestSuite
 import com.kms.katalon.core.annotation.AfterTestCase
 import com.kms.katalon.core.annotation.AfterTestSuite
-import com.kms.katalon.core.annotation.AfterTestStep
 import com.kms.katalon.core.context.TestCaseContext
 import com.kms.katalon.core.context.TestSuiteContext
-import com.kms.katalon.core.context.TestStepContext
 
 class BrowserSetup {
 
@@ -35,39 +33,14 @@ class BrowserSetup {
 	@BeforeTestCase
 	def beforeTestCase(TestCaseContext testCaseContext) {
 		// Tự động maximize window trước mỗi test case
+		// Lưu ý: maximizeWindow() sẽ được gọi trong test case sau khi openBrowser
+		// Đây chỉ là backup nếu test case quên maximize
 		safeMaximizeWindow()
 	}
 	
-	@AfterTestStep
-	def afterTestStep(TestStepContext testStepContext) {
-		// QUAN TRỌNG: Sau mỗi test step, tự động maximize window
-		// Đảm bảo window được maximize sau khi browser mở hoặc navigate
-		try {
-			String stepName = testStepContext.getTestStepName()
-			
-			// Maximize sau các step quan trọng (openBrowser, navigateToUrl)
-			if (stepName != null) {
-				String lowerStepName = stepName.toLowerCase()
-				
-				if (lowerStepName.contains('openbrowser') || 
-					lowerStepName.contains('navigatetourl') ||
-					lowerStepName.contains('navigateto')) {
-					// Đợi browser sẵn sàng (tăng thời gian đợi)
-					Thread.sleep(1000)
-					safeMaximizeWindow("after: $stepName")
-					// Đợi thêm một chút để window maximize hoàn tất
-					Thread.sleep(500)
-				} else {
-					// Với các step khác, vẫn thử maximize (nếu browser đã mở)
-					safeMaximizeWindow()
-				}
-			} else {
-				// Nếu không có step name, vẫn thử maximize
-				safeMaximizeWindow()
-			}
-		} catch (Exception e) {
-			// Browser chưa mở hoặc đã đóng, bỏ qua
-		}
+	@AfterTestCase
+	def afterTestCase(TestCaseContext testCaseContext) {
+		// Cleanup sau mỗi test case nếu cần
 	}
 	
 	/**

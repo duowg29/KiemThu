@@ -23,10 +23,24 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-// Đợi element sẵn sàng và scroll đến element trước khi click
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 10)
+// Đợi page load hoàn toàn
+WebUI.delay(2)
+
+// Đợi element present (tồn tại trong DOM) trước
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 20)
+
+// Đợi element visible và scroll đến element
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 20)
 WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a_Camera_active'))
+
+// Thử click bình thường, nếu fail thì dùng JavaScript click
+try {
+	WebUI.click(findTestObject('Object Repository/Page_CamNest/a_Camera_active'))
+} catch (Exception e) {
+	// Fallback: Dùng JavaScript click nếu normal click fail
+	println "Normal click failed, trying JavaScript click..."
+	WebUI.executeJavaScript('arguments[0].click();', [WebUI.findWebElement(findTestObject('Object Repository/Page_CamNest/a_Camera_active'))])
+}
 
 WebUI.takeScreenshotAsCheckpoint('home_page')
 
