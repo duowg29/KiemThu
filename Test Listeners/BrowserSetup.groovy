@@ -31,13 +31,30 @@ class BrowserSetup {
 	}
 
 	@BeforeTestCase
-	def setup(TestCaseContext testCaseContext) {
+	def beforeTestCase(TestCaseContext testCaseContext) {
+		// Tự động maximize window cho mọi test case trong mọi test suite
 		try {
-			// Maximize window nếu browser đã mở
+			// Thử maximize window ngay lập tức
 			WebUI.maximizeWindow()
 		} catch (Exception e) {
-			// Nếu browser chưa mở ở thời điểm này thì bỏ qua
-			// Browser sẽ được mở bởi test case hoặc test suite setup
+			// Nếu browser chưa mở, đợi một chút rồi thử lại
+			try {
+				Thread.sleep(500) // Đợi 500ms
+		WebUI.maximizeWindow()
+			} catch (Exception e2) {
+				// Nếu vẫn không được, browser sẽ được mở bởi test case
+				// Maximize sẽ được thực hiện sau khi browser mở
+			}
+		}
+	}
+	
+	@AfterTestCase
+	def afterTestCase(TestCaseContext testCaseContext) {
+		// Đảm bảo window vẫn maximize sau mỗi test case
+		try {
+			WebUI.maximizeWindow()
+		} catch (Exception e) {
+			// Browser có thể đã đóng, bỏ qua
 		}
 	}
 }
