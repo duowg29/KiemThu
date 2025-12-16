@@ -21,6 +21,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a (29)'))
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_pro (2)'))

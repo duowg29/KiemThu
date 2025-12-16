@@ -1,0 +1,45 @@
+import static com.kms.katalon.core.checkpoint.CheckpointFactory.findCheckpoint
+import static com.kms.katalon.core.testcase.TestCaseFactory.findTestCase
+import static com.kms.katalon.core.testdata.TestDataFactory.findTestData
+import static com.kms.katalon.core.testobject.ObjectRepository.findTestObject
+import static com.kms.katalon.core.testobject.ObjectRepository.findWindowsObject
+import com.kms.katalon.core.checkpoint.Checkpoint as Checkpoint
+import com.kms.katalon.core.cucumber.keyword.CucumberBuiltinKeywords as CucumberKW
+import com.kms.katalon.core.mobile.keyword.MobileBuiltInKeywords as Mobile
+import com.kms.katalon.core.model.FailureHandling as FailureHandling
+import com.kms.katalon.core.testcase.TestCase as TestCase
+import com.kms.katalon.core.testdata.TestData as TestData
+import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
+import com.kms.katalon.core.testobject.TestObject as TestObject
+import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
+import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
+import internal.GlobalVariable as GlobalVariable
+import org.openqa.selenium.Keys as Keys
+
+WebUI.openBrowser('')
+
+WebUI.navigateToUrl('http://localhost/CAMNEST/')
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (43)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (8)'))
+
+WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup (4)'), 'phu1234@')
+
+WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email (4)'), 'quachnk63@gmail.com')
+
+WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPassword1 (4)'), '+N2vD+nn6r0qcSVVRBuo0A==')
+
+WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (4)'), '+N2vD+nn6r0qcSVVRBuo0A==')
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest/input__acceptEULA (3)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (4)'))
+
+WebUI.click(findTestObject('Object Repository/Page_CamNest/div_Or_alert-danger'))
+
+WebUI.takeScreenshotAsCheckpoint('T13-02')
+
+WebUI.closeBrowser()
+

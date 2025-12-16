@@ -21,6 +21,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a (11)'))
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a_Chn my Manfrotto Pixi Mini_next'))

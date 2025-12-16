@@ -23,6 +23,8 @@ WebUI.maximizeWindow()
 
 WebUI.navigateToUrl(GlobalVariable.baseUrl)
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (136)'))
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest/form (3)'))

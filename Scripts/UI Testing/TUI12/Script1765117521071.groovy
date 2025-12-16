@@ -21,6 +21,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fa-solid fa-magnifying-glass search (3)'))
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a (32)'))

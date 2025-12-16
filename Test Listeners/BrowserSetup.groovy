@@ -19,8 +19,10 @@ import com.kms.katalon.core.annotation.BeforeTestCase
 import com.kms.katalon.core.annotation.BeforeTestSuite
 import com.kms.katalon.core.annotation.AfterTestCase
 import com.kms.katalon.core.annotation.AfterTestSuite
+import com.kms.katalon.core.annotation.AfterTestStep
 import com.kms.katalon.core.context.TestCaseContext
 import com.kms.katalon.core.context.TestSuiteContext
+import com.kms.katalon.core.context.TestStepContext
 
 class BrowserSetup {
 
@@ -32,29 +34,43 @@ class BrowserSetup {
 
 	@BeforeTestCase
 	def beforeTestCase(TestCaseContext testCaseContext) {
-		// Tự động maximize window cho mọi test case trong mọi test suite
+		// Tự động maximize window trước mỗi test case
+		// Nếu browser chưa mở thì bỏ qua (sẽ maximize sau khi browser mở)
 		try {
-			// Thử maximize window ngay lập tức
 			WebUI.maximizeWindow()
 		} catch (Exception e) {
-			// Nếu browser chưa mở, đợi một chút rồi thử lại
-			try {
-				Thread.sleep(500) // Đợi 500ms
-		WebUI.maximizeWindow()
-			} catch (Exception e2) {
-				// Nếu vẫn không được, browser sẽ được mở bởi test case
-				// Maximize sẽ được thực hiện sau khi browser mở
-			}
+			// Browser chưa mở, không cần xử lý
 		}
 	}
 	
-	@AfterTestCase
-	def afterTestCase(TestCaseContext testCaseContext) {
-		// Đảm bảo window vẫn maximize sau mỗi test case
+	@AfterTestStep
+	def afterTestStep(TestStepContext testStepContext) {
+		// QUAN TRỌNG: Sau mỗi test step, tự động maximize window
+		// Đảm bảo window được maximize sau khi browser mở hoặc navigate
 		try {
-			WebUI.maximizeWindow()
+			String stepName = testStepContext.getTestStepName()
+			
+			// Maximize sau các step quan trọng (openBrowser, navigateToUrl)
+			if (stepName != null) {
+				String lowerStepName = stepName.toLowerCase()
+				
+				if (lowerStepName.contains('openbrowser') || 
+					lowerStepName.contains('navigatetourl') ||
+					lowerStepName.contains('navigateto')) {
+					// Đợi browser sẵn sàng (tăng thời gian đợi)
+					Thread.sleep(800)
+					WebUI.maximizeWindow()
+					println "✓ Window maximized after: $stepName"
+				} else {
+					// Với các step khác, vẫn thử maximize (nếu browser đã mở)
+					WebUI.maximizeWindow()
+				}
+			} else {
+				// Nếu không có step name, vẫn thử maximize
+				WebUI.maximizeWindow()
+			}
 		} catch (Exception e) {
-			// Browser có thể đã đóng, bỏ qua
+			// Browser chưa mở hoặc đã đóng, bỏ qua
 		}
 	}
 }

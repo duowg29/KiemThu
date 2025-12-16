@@ -21,6 +21,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-shopping-cart'))
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest/button_Apply_normal'))

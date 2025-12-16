@@ -1,78 +1,78 @@
-# Script để thêm WebUI.maximizeWindow() vào tất cả test suites
-# Script này sẽ:
-# 1. Kích hoạt @SetupTestCase (đổi skipped = true thành skipped = false)
-# 2. Thêm WebUI.maximizeWindow() vào method setupTestCase()
+# Script de them WebUI.maximizeWindow() vao tat ca test cases
+# Script nay se tu dong them maximizeWindow() sau openBrowser va navigateToUrl
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "Adding WebUI.maximizeWindow() to all test suites" -ForegroundColor Cyan
+Write-Host "Adding WebUI.maximizeWindow() to all test cases" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Tìm tất cả file .groovy trong Test Suites
-$testSuiteFiles = Get-ChildItem -Path "Test Suites" -Recurse -Filter "*.groovy" -ErrorAction SilentlyContinue
+# Tim tat ca file .groovy trong Scripts
+$testCaseFiles = Get-ChildItem -Path "Scripts" -Recurse -Filter "*.groovy" -ErrorAction SilentlyContinue
 
-if (-not $testSuiteFiles) {
-    Write-Host "ERROR: No .groovy test suite files found in Test Suites folder" -ForegroundColor Red
+if (-not $testCaseFiles) {
+    Write-Host "ERROR: No .groovy test case files found in Scripts folder" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Found $($testSuiteFiles.Count) test suite file(s)" -ForegroundColor Green
+Write-Host "Found $($testCaseFiles.Count) test case file(s)" -ForegroundColor Green
 Write-Host ""
 
 $updatedCount = 0
 $skippedCount = 0
 
-foreach ($file in $testSuiteFiles) {
+foreach ($file in $testCaseFiles) {
     Write-Host "Processing: $($file.Name)" -ForegroundColor Yellow
     
     try {
         $content = Get-Content $file.FullName -Raw -Encoding UTF8
-        
-        # Kiểm tra xem đã có WebUI.maximizeWindow() chưa
-        if ($content -match 'WebUI\.maximizeWindow\(\)') {
-            Write-Host "  Already has WebUI.maximizeWindow() - skipping" -ForegroundColor Gray
-            $skippedCount++
-            continue
-        }
-        
         $originalContent = $content
         $modified = $false
         
-        # 1. Kích hoạt @SetupTestCase: đổi skipped = true thành skipped = false
-        if ($content -match '@SetupTestCase\(skipped\s*=\s*true\)') {
-            $content = $content -replace '@SetupTestCase\(skipped\s*=\s*true\)', '@SetupTestCase(skipped = false)'
-            $modified = $true
-            Write-Host "  Activated @SetupTestCase" -ForegroundColor Green
+        # 1. Them maximizeWindow() sau openBrowser neu chua co
+        if ($content -match 'WebUI\.openBrowser\(''\)') {
+            # Kiem tra xem da co maximizeWindow() ngay sau openBrowser chua
+            $hasMaximizeAfterOpen = $content -match 'WebUI\.openBrowser\(''\)\s*\r?\n\s*WebUI\.maximizeWindow\(\)'
+            if (-not $hasMaximizeAfterOpen) {
+                # Them maximizeWindow() sau openBrowser
+                $content = $content -replace '(WebUI\.openBrowser\(''\))\s*(\r?\n)', "`$1`$2`tWebUI.maximizeWindow()`$2"
+                $modified = $true
+                Write-Host "  [OK] Added maximizeWindow() after openBrowser()" -ForegroundColor Green
+            } else {
+                Write-Host "  [SKIP] Already has maximizeWindow() after openBrowser()" -ForegroundColor Gray
+            }
         }
         
-        # 2. Thêm WebUI.maximizeWindow() vào method setupTestCase()
-        # Tìm method setupTestCase() và thêm code vào
-        if ($content -match 'def setupTestCase\(\)\s*\{[^}]*// Put your code here\.') {
-            # Thay thế comment bằng code maximize window
-            $content = $content -replace '(def setupTestCase\(\)\s*\{[^\r\n]*\r?\n\s*)// Put your code here\.', "`$1`tWebUI.maximizeWindow()`r`n"
-            $modified = $true
-            Write-Host "  Added WebUI.maximizeWindow() to setupTestCase()" -ForegroundColor Green
-        } elseif ($content -match 'def setupTestCase\(\)\s*\{') {
-            # Nếu method đã có code khác, thêm vào đầu method
-            $content = $content -replace '(def setupTestCase\(\)\s*\{)', "`$1`r`n`tWebUI.maximizeWindow()`r`n"
-            $modified = $true
-            Write-Host "  Added WebUI.maximizeWindow() to setupTestCase()" -ForegroundColor Green
+        # 2. Them maximizeWindow() sau navigateToUrl neu chua co
+        if ($content -match 'WebUI\.navigateToUrl\(') {
+            # Kiem tra xem da co maximizeWindow() ngay sau navigateToUrl chua
+            $hasMaximizeAfterNavigate = $content -match 'WebUI\.navigateToUrl\([^)]+\)\s*\r?\n\s*WebUI\.maximizeWindow\(\)'
+            if (-not $hasMaximizeAfterNavigate) {
+                # Them maximizeWindow() sau navigateToUrl
+                $content = $content -replace '(WebUI\.navigateToUrl\([^)]+\))\s*(\r?\n)', "`$1`$2`tWebUI.maximizeWindow()`$2"
+                $modified = $true
+                Write-Host "  [OK] Added maximizeWindow() after navigateToUrl()" -ForegroundColor Green
+            } else {
+                Write-Host "  [SKIP] Already has maximizeWindow() after navigateToUrl()" -ForegroundColor Gray
+            }
         }
         
         if ($modified) {
-            # Lưu file với UTF-8 encoding
-            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-            [System.IO.File]::WriteAllText($file.FullName, $content, $utf8NoBom)
-            Write-Host "  Updated successfully" -ForegroundColor Green
+            # Backup file goc
+            $backupFile = $file.FullName + ".backup"
+            Copy-Item $file.FullName -Destination $backupFile -Force
+            Write-Host "  Created backup: $($file.Name).backup" -ForegroundColor Gray
+            
+            # Ghi file moi
+            [System.IO.File]::WriteAllText($file.FullName, $content, [System.Text.Encoding]::UTF8)
             $updatedCount++
+            Write-Host "  [SUCCESS] Updated successfully" -ForegroundColor Green
         } else {
-            Write-Host "  No changes needed (may already be configured)" -ForegroundColor Gray
             $skippedCount++
+            Write-Host "  [SKIP] No changes needed" -ForegroundColor Gray
         }
         
     } catch {
-        Write-Host "  ERROR: Failed to process file" -ForegroundColor Red
-        Write-Host "    Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  [ERROR] $($_.Exception.Message)" -ForegroundColor Red
     }
     
     Write-Host ""
@@ -82,15 +82,4 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "Summary:" -ForegroundColor Cyan
 Write-Host "  Updated: $updatedCount file(s)" -ForegroundColor Green
 Write-Host "  Skipped: $skippedCount file(s)" -ForegroundColor Yellow
-Write-Host "  Total: $($testSuiteFiles.Count) file(s)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
-
-if ($updatedCount -gt 0) {
-    Write-Host ""
-    Write-Host "SUCCESS: WebUI.maximizeWindow() has been added to $updatedCount test suite(s)" -ForegroundColor Green
-    Write-Host "The maximize window command will run before each test case in these suites." -ForegroundColor Green
-} else {
-    Write-Host ""
-    Write-Host "INFO: No files were updated. All test suites may already have WebUI.maximizeWindow()" -ForegroundColor Yellow
-}
-

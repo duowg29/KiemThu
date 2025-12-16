@@ -21,6 +21,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (135)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Copyrights  2009 CamNest Trading  Ser_f132af'), 'phu1234@')
