@@ -32,10 +32,8 @@ class BrowserSetup {
 
 	@BeforeTestCase
 	def beforeTestCase(TestCaseContext testCaseContext) {
-		// Tự động maximize window trước mỗi test case
-		// Lưu ý: maximizeWindow() sẽ được gọi trong test case sau khi openBrowser
-		// Đây chỉ là backup nếu test case quên maximize
-		safeMaximizeWindow()
+		// Không maximize ở đây vì browser chưa mở
+		// maximizeWindow() sẽ được gọi trong test case sau khi openBrowser
 	}
 	
 	@AfterTestCase

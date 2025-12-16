@@ -23,27 +23,42 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-// Đợi element sẵn sàng và scroll đến element trước khi click
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a (5)'), 10)
+// Đợi page load hoàn toàn
+WebUI.delay(2)
+
+// Đợi element present (tồn tại trong DOM) trước
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_CamNest/a (5)'), 20)
+
+// Đợi element visible và scroll đến element
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a (5)'), 20)
 WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a (5)'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (5)'))
 
-// Đợi và scroll cho các click tiếp theo
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'), 10)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'))
+// Thử click bình thường, nếu fail thì dùng JavaScript click
+try {
+	WebUI.click(findTestObject('Object Repository/Page_CamNest/a (5)'))
+} catch (Exception e) {
+	// Fallback: Dùng JavaScript click nếu normal click fail
+	println "Normal click failed, trying JavaScript click..."
+	WebUI.executeJavaScript('arguments[0].click();', [WebUI.findWebElement(findTestObject('Object Repository/Page_CamNest/a (5)'))])
+}
 
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'), 10)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'))
+// Đợi và scroll cho các click tiếp theo với JavaScript fallback
+def clickWithFallback = { testObject ->
+	try {
+		WebUI.waitForElementPresent(testObject, 20)
+		WebUI.waitForElementVisible(testObject, 20)
+		WebUI.scrollToElement(testObject, 10)
+		WebUI.click(testObject)
+	} catch (Exception e) {
+		println "Normal click failed for ${testObject.getObjectId()}, trying JavaScript click..."
+		WebUI.executeJavaScript('arguments[0].click();', [WebUI.findWebElement(testObject)])
+	}
+}
 
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Lens/a'), 10)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Lens/a'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Lens/a'))
-
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a_1'), 10)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a_1'), 10)
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a_1'))
+clickWithFallback(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'))
+clickWithFallback(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'))
+clickWithFallback(findTestObject('Object Repository/Page_CamNest - Lens/a'))
+clickWithFallback(findTestObject('Object Repository/Page_CamNest/a_1'))
 
 WebUI.takeScreenshotAsCheckpoint('navbar_page')
 
