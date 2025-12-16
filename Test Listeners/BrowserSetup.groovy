@@ -35,12 +35,7 @@ class BrowserSetup {
 	@BeforeTestCase
 	def beforeTestCase(TestCaseContext testCaseContext) {
 		// Tự động maximize window trước mỗi test case
-		// Nếu browser chưa mở thì bỏ qua (sẽ maximize sau khi browser mở)
-		try {
-			WebUI.maximizeWindow()
-		} catch (Exception e) {
-			// Browser chưa mở, không cần xử lý
-		}
+		safeMaximizeWindow()
 	}
 	
 	@AfterTestStep
@@ -59,18 +54,80 @@ class BrowserSetup {
 					lowerStepName.contains('navigateto')) {
 					// Đợi browser sẵn sàng (tăng thời gian đợi)
 					Thread.sleep(800)
-					WebUI.maximizeWindow()
-					println "✓ Window maximized after: $stepName"
+					safeMaximizeWindow("after: $stepName")
 				} else {
 					// Với các step khác, vẫn thử maximize (nếu browser đã mở)
-					WebUI.maximizeWindow()
+					safeMaximizeWindow()
 				}
 			} else {
 				// Nếu không có step name, vẫn thử maximize
-				WebUI.maximizeWindow()
+				safeMaximizeWindow()
 			}
 		} catch (Exception e) {
 			// Browser chưa mở hoặc đã đóng, bỏ qua
+		}
+	}
+	
+	/**
+	 * Maximize window một cách an toàn (bỏ qua trong headless mode)
+	 * @param context Optional context message for logging
+	 */
+	private void safeMaximizeWindow(String context = '') {
+		// Bỏ qua nếu đang chạy trong headless mode
+		if (isHeadlessMode()) {
+			return
+		}
+		
+		try {
+			WebUI.maximizeWindow()
+			if (context) {
+				println "✓ Window maximized $context"
+			}
+		} catch (Exception e) {
+			// Browser chưa mở hoặc headless mode, bỏ qua
+			// Không log error để tránh spam trong headless mode
+		}
+	}
+	
+	/**
+	 * Kiểm tra xem có đang chạy trong headless mode không
+	 * @return true nếu headless mode, false nếu không
+	 */
+	private boolean isHeadlessMode() {
+		try {
+			// Kiểm tra browser type từ GlobalVariable
+			try {
+				String browserType = GlobalVariable.browserType
+				if (browserType != null && browserType.toLowerCase().contains('headless')) {
+					return true
+				}
+			} catch (Exception e) {
+				// GlobalVariable.browserType có thể không tồn tại
+			}
+			
+			// Kiểm tra JAVA_OPTS system property
+			String headlessProp = System.getProperty('java.awt.headless')
+			if (headlessProp != null && headlessProp.equalsIgnoreCase('true')) {
+				return true
+			}
+			
+			// Kiểm tra browser type từ system property
+			String browserTypeProp = System.getProperty('katalon.browser.type')
+			if (browserTypeProp != null && browserTypeProp.toLowerCase().contains('headless')) {
+				return true
+			}
+			
+			// Kiểm tra environment variable
+			String browserTypeEnv = System.getenv('KATALON_BROWSER_TYPE')
+			if (browserTypeEnv != null && browserTypeEnv.toLowerCase().contains('headless')) {
+				return true
+			}
+			
+			// Mặc định: không phải headless (để maximize hoạt động trên local)
+			return false
+		} catch (Exception e) {
+			// Nếu có lỗi khi kiểm tra, giả định không phải headless
+			return false
 		}
 	}
 }
