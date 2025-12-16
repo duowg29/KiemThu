@@ -23,6 +23,9 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
+// Đợi element sẵn sàng và scroll đến element trước khi click
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a_Camera_active'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a_Camera_active'))
 
 WebUI.takeScreenshotAsCheckpoint('home_page')

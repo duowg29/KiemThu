@@ -23,6 +23,9 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
+// Đợi element sẵn sàng và scroll đến element trước khi click
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/ul_Home_navbar (1)'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/ul_Home_navbar (1)'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest/ul_Home_navbar (1)'))
 
 WebUI.takeScreenshotAsCheckpoint('navbar')

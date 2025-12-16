@@ -23,14 +23,26 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
+// Đợi element sẵn sàng và scroll đến element trước khi click
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a (5)'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a (5)'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a (5)'))
 
+// Đợi và scroll cho các click tiếp theo
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'))
 
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'))
 
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest - Lens/a'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest - Lens/a'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest - Lens/a'))
 
+WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a_1'), 10)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a_1'), 10)
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a_1'))
 
 WebUI.takeScreenshotAsCheckpoint('navbar_page')
