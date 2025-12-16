@@ -22,20 +22,22 @@ import com.kms.katalon.core.annotation.AfterTestSuite
 import com.kms.katalon.core.context.TestCaseContext
 import com.kms.katalon.core.context.TestSuiteContext
 
-
-import com.kms.katalon.core.annotation.BeforeTestCase
-import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
-
 class BrowserSetup {
 
+	@BeforeTestSuite
+	def beforeTestSuite(TestSuiteContext testSuiteContext) {
+		// Setup before test suite starts
+		println "Starting test suite: ${testSuiteContext.getTestSuiteId()}"
+	}
+
 	@BeforeTestCase
-	def setup() {
-		WebUI.openBrowser('')
-		WebUI.maximizeWindow()
-		
-		// Navigate to base URL from global variable if set
-		if (GlobalVariable.baseUrl != null && !GlobalVariable.baseUrl.isEmpty()) {
-			WebUI.navigateToUrl(GlobalVariable.baseUrl)
+	def setup(TestCaseContext testCaseContext) {
+		try {
+			// Maximize window nếu browser đã mở
+			WebUI.maximizeWindow()
+		} catch (Exception e) {
+			// Nếu browser chưa mở ở thời điểm này thì bỏ qua
+			// Browser sẽ được mở bởi test case hoặc test suite setup
 		}
 	}
 }

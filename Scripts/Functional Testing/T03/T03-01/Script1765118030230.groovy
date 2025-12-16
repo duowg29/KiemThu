@@ -19,6 +19,8 @@ import org.openqa.selenium.Keys as Keys
 
 WebUI.openBrowser('')
 
+WebUI.maximizeWindow()
+
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest/a (7)'))
