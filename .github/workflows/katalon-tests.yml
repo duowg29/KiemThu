@@ -193,7 +193,8 @@ jobs:
         
         # Set environment variables trước khi chạy (đảm bảo headless)
         # QUAN TRỌNG: Thêm system property để Test Listener biết đang chạy headless
-        $env:JAVA_OPTS = '-Djava.awt.headless=true -Dkatalon.browser.type=Chrome (headless) -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true'
+        # Suppress AI bundle warnings và disable javax annotations
+        $env:JAVA_OPTS = '-Djava.awt.headless=true -Dkatalon.browser.type=Chrome (headless) -Dorg.eclipse.swt.browser.DefaultType=none -Dkatalon.webview.enabled=false -Dorg.eclipse.swt.browser.chromium.enabled=false -Declipse.e4.inject.javax.disabled=true -Declipse.e4.inject.javax.warning=false'
         $env:KATALON_OPTS = '-noSplash -consoleLog'
         
         Write-Host "Environment variables set:"
@@ -844,6 +845,45 @@ jobs:
                     Write-Host ""
                     Write-Host "NOTE: Exit code 1 is expected when tests fail." -ForegroundColor Yellow
                     Write-Host "This is normal behavior - tests ran but some failed." -ForegroundColor Yellow
+                    
+                    # Hiển thị chi tiết các test failures
+                    Write-Host ""
+                    Write-Host "=== DETAILED TEST FAILURES ===" -ForegroundColor Red
+                    try {
+                      $testCases = $junitXml.SelectNodes("//testcase")
+                      foreach ($testCase in $testCases) {
+                        $failure = $testCase.SelectSingleNode("failure")
+                        $error = $testCase.SelectSingleNode("error")
+                        if ($failure -or $error) {
+                          $testName = $testCase.name
+                          $className = $testCase.classname
+                          Write-Host ""
+                          Write-Host "Test: $testName" -ForegroundColor Yellow
+                          Write-Host "Class: $className" -ForegroundColor Gray
+                          if ($failure) {
+                            Write-Host "Failure Message: $($failure.message)" -ForegroundColor Red
+                            $failureText = $failure.'#text'
+                            if ($failureText) {
+                              $failureLines = ($failureText -split "`n") | Select-Object -First 10
+                              Write-Host "Failure Details (first 10 lines):" -ForegroundColor Red
+                              $failureLines | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
+                            }
+                          }
+                          if ($error) {
+                            Write-Host "Error Message: $($error.message)" -ForegroundColor Red
+                            $errorText = $error.'#text'
+                            if ($errorText) {
+                              $errorLines = ($errorText -split "`n") | Select-Object -First 10
+                              Write-Host "Error Details (first 10 lines):" -ForegroundColor Red
+                              $errorLines | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
+                            }
+                          }
+                        }
+                      }
+                    } catch {
+                      Write-Host "Could not parse detailed failure information: $($_.Exception.Message)" -ForegroundColor Yellow
+                    }
+                    Write-Host "==============================" -ForegroundColor Red
                   }
                 }
               }
