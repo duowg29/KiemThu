@@ -19,6 +19,8 @@ import org.openqa.selenium.Keys as Keys
 
 WebUI.openBrowser('')
 
+WebUI.maximizeWindow()
+
 WebUI.navigateToUrl(GlobalVariable.baseUrl)
 
 WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (136)'))
