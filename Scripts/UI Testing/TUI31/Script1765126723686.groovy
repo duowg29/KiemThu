@@ -22,17 +22,23 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (21)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (12)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (12)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0a7e11'))ng thc thanh ton_sea_0a7e11'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (11)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_pExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sortBy'))o phng thc thanh ton_sortBy'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (2)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0a7e11'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_st_b60020'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_pa_cbadc5'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sortBy'))
 
 WebUI.takeScreenshotAsCheckpoint('order_mana_list')
 

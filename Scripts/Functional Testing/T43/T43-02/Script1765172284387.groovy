@@ -22,19 +22,21 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (102)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (85)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (85)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (21)'))av-link (21)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (84)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (21)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_2_page-link (2)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_Khng xut hin li_pExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (6)'))atsTable (6)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_Khng xut hin li_page-link'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (6)'))
 
 WebUI.takeScreenshotAsCheckpoint('T43-02')
 

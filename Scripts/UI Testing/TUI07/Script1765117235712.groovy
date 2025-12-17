@@ -22,15 +22,17 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (6)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup'))p_txt-signup'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (2)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__signupPassword2'))nupPassword2'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPassword1'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__signupPassword2'))
 
 WebUI.takeScreenshotAsCheckpoint('popup_signup_input')
 

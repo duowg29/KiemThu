@@ -22,16 +22,18 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (31)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (5)'))nd_brand (5)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (5)'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand (5)'), 'Canon', true)
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price (2)'), '20m-40m', 
     true)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_searchExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (5)'))uct-list (5)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn (5)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (5)'))
 
 WebUI.takeScreenshotAsCheckpoint('T10-02')
 

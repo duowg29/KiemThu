@@ -22,17 +22,19 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (129)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (112)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (112)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (28)'))av-link (28)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (111)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/a_Wait for payment_pageExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/a_Wait for payment_page-btn_1'))t_page-btn_1'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (28)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/a_Wait for payment_page-btn (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/a_Wait for payment_page-btn_1'))
 
 WebUI.takeScreenshotAsCheckpoint('T39-02')
 

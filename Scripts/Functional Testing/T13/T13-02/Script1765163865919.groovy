@@ -22,8 +22,6 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (43)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (8)'))
@@ -34,9 +32,13 @@ WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPassword1 (4)'), '+N2vD+nn6r0qcSVVRBuo0A==')
 
-WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (4)'), '+N2vD+nn6r0qcSVExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptEULA (3)'))ceptEULA (3)'))
+WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (4)'), '+N2vD+nn6r0qcSVVRBuo0A==')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupBuExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Or_alert-danger'))alert-danger'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptEULA (3)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (4)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Or_alert-danger'))
 
 WebUI.takeScreenshotAsCheckpoint('T13-02')
 

@@ -22,17 +22,19 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (115)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (98)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (98)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (14)'))av-link (14)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (97)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0aExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/div_Clear Selection_orders-section (3)'))-section (3)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (14)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0a7e11 (4)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/div_Clear Selection_orders-section (3)'))
 
 WebUI.takeScreenshotAsCheckpoint('T34-04')
 

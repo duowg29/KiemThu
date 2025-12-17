@@ -22,17 +22,23 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (15)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (6)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (6)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_suExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Advanced Product Management_stat-card'))roduct Management_stat-card'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (5)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Total Products_sExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Product Types_sExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Brands_stat-card'))amNest/div_Brands_stat-card'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Advanced Product Management_stat-card'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Total Products_stat-card'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Product Types_stat-card'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Brands_stat-card'))
 
 WebUI.takeScreenshotAsCheckpoint('product_mana_card')
 

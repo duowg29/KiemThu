@@ -22,20 +22,22 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (81)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (63)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (63)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (19)'))av-link (19)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (62)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (19)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/i_Canon_fas fa-edit'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select__categorySelect (3)'), 
-   ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (2)'))-primary (2)'))
+    '3', true)
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (2)'))
 
 WebUI.takeScreenshotAsCheckpoint('T30-01')
 

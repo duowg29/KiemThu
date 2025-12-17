@@ -22,8 +22,6 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (12)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (3)'), 'admin')
@@ -32,9 +30,13 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Cont
 
 WebUI.sendKeys(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (3)'), Keys.chord(Keys.ENTER))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a__nav-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Statistics Chart_chart-container'))rt-container'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a__nav-link (1)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Distribution by Role_chart-cExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Growth_chart-container'))rt-container'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Statistics Chart_chart-container'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Distribution by Role_chart-container'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Growth_chart-container'))
 
 WebUI.takeScreenshotAsCheckpoint('acocunt_mana_chart')
 

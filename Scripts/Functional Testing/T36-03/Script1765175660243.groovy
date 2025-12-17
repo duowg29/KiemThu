@@ -22,15 +22,15 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (123)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (106)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (106)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (22)'))av-link (22)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (105)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (22)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/button_Doanh thu theo phng thc thanh ton_bt_8cb3d1 (3)'))
 
@@ -38,7 +38,9 @@ WebUI.setText(findTestObject('Object Repository/Page_Advanced Order Management -
     '')
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select__product_select (2)'), 
-    'ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/button__btn btn-secondary'))tn-secondary'))
+    '200', true)
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/button__btn btn-secondary'))
 
 WebUI.takeScreenshotAsCheckpoint('T36-03')
 

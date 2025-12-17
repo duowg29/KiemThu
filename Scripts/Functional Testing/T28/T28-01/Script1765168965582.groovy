@@ -22,15 +22,15 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (76)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (58)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (58)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (14)'))av-link (14)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (57)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (14)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_So snh s lng sn phm theo nh cung cp__46b4ec (1)'))
 
@@ -45,7 +45,9 @@ WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Produc
 WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input__productPrice'), '16000000')
 
 WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/textarea_Description_productDescription'), 
-    'mô tảExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary')) btn-primary'))
+    'mô tả về flash')
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary'))
 
 WebUI.takeScreenshotAsCheckpoint('T28-01')
 

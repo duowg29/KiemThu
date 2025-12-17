@@ -22,17 +22,23 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (28)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (19)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (19)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Tm kim email_search-email'))t_Tm kim email_search-email'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (18)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_T ngy_stExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_n ngy_ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/select_Tt c_status-filter'))t/select_Tt c_status-filter'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (5)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Tm kim email_search-email'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_T ngy_start-date'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_n ngy_end-date'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/select_Tt c_status-filter'))
 
 WebUI.takeScreenshotAsCheckpoint('email_thongke_filter')
 

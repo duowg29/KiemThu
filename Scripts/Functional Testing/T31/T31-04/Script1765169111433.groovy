@@ -22,17 +22,19 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (86)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (68)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (68)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (24)'))av-link (24)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (67)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/a_Manfrotto_pageExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/a_Fujifilm_page-btn (1)'))page-btn (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (24)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/a_Manfrotto_page-btn (4)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/a_Fujifilm_page-btn (1)'))
 
 WebUI.takeScreenshotAsCheckpoint('T31-04')
 

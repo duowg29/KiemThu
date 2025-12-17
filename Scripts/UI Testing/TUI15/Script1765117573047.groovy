@@ -32,13 +32,21 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Cont
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (115)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object RepositExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-E10_far fa-cart-plus cart (6)'))0_faExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-cart (7)'))ct_fas fa-shopping-cart (7)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (24)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-E10_far fa-cart-plus cart (6)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-cart (7)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (5)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/inputExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'))extaExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)')) Notes (Optional)_notes (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'))
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_form')
 

@@ -22,8 +22,6 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (41)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (6)'))
@@ -34,7 +32,11 @@ WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPassword1 (2)'), '2JzPR/xYVF0ESRcxiJj1+g==')
 
-WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (2)'), '2JzPR/xYVF0ESRcExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (2)'))e for news_signupButton (2)'))
+WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (2)'), '2JzPR/xYVF0ESRcxiJj1+g==')
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptEULA (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (2)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Thng bo kim tra Email/a_Vui lng kim tra email  xc nhn ng k_btn-custom'))
 
@@ -44,7 +46,11 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Gmail/span_Lea
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_Welcome/input_Too many failed attempts_Passwd'), 'v79kof+O4jeVZepuujW8Kw==')
 
-WebUI.sendKeys(findTestObject('Object Repository/Page_Welcome/input_Too many failed attempts_Passwd'), Keys.chord(KExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Inbox (16) - 25a4041902hvnh.edu.vn - H_19f46d/div_CAMNEST  Xc nhn ti khon  08 Dec 2025, ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CAMNEST  Xc nhn ti khon  08 Dec 2025, _7e3502/a_CamNest_m_-3443156591798166017button'))_-3443156591798166017button'))
+WebUI.sendKeys(findTestObject('Object Repository/Page_Welcome/input_Too many failed attempts_Passwd'), Keys.chord(Keys.ENTER))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Inbox (16) - 25a4041902hvnh.edu.vn - H_19f46d/div_CAMNEST  Xc nhn ti khon  08 Dec 2025, 1_9646b0'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CAMNEST  Xc nhn ti khon  08 Dec 2025, _7e3502/a_CamNest_m_-3443156591798166017button'))
 
 WebUI.takeScreenshotAsCheckpoint('T12-01')
 

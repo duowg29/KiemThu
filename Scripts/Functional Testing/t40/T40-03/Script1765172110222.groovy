@@ -22,20 +22,22 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (91)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (73)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (73)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (9)'))nav-link (9)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (72)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (9)'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest/select_Template_template_type (3)'), 'Newsletter_Custom', 
     true)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Subject_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_all (3)'))rget_all (3)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Subject_subject (3)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_all (3)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/textarea_Content_content (3)'), 'Nội dung')
 

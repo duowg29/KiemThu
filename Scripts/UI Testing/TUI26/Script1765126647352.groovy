@@ -22,8 +22,6 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (16)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (7)'), 'admin')
@@ -32,11 +30,19 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Cont
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (6)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest AdminExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Analytics Charts_chart-container'))ticsExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Top 5 sn phm gi cao nht_chart-container')) gi cao nht_chart-container'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Analytics Charts_chart-container'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Top 5 sn phm gi cao nht_chart-container'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Phn b gi sn phm_chart-container'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Top 5 nh cung cp nhiuExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Sn phm theo loi_chart-container'))hm tExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Sn phm theo hng_chart-container'))hm theo hng_chart-container'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Top 5 nh cung cp nhiu sn phm_chart-container'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Sn phm theo loi_chart-container'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/div_Sn phm theo hng_chart-container'))
 
 WebUI.takeScreenshotAsCheckpoint('product_mana_chart')
 

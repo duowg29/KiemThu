@@ -22,8 +22,6 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (24)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (15)'), 'admin')
@@ -32,11 +30,19 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Cont
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (14)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest AdmExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/select_Template_template_type'))lectExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Subject_subject'))mNest/input_Subject_subject'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/select_Template_template_type'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Subject_subject'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Send Date and Time_send_date_time'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_all'))ge_CExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/textarea_Content_content'))st/textarea_Content_content'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_target'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_all'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/textarea_Content_content'))
 
 WebUI.takeScreenshotAsCheckpoint('email_form_input')
 

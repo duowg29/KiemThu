@@ -22,19 +22,21 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (17)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (8)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (8)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_suExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (2)'))nav-link (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (7)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (2)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input_So snh s lng sn phm theo nh cung cp_s_6477d0'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select_So snh s lng sn phm theo nh cung cpExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select_So snh s lng sn phm theo nh cung cp_sortBy'))ng cp_sortBy'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select_So snh s lng sn phm theo nh cung cp__558c02'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select_So snh s lng sn phm theo nh cung cp_sortBy'))
 
 WebUI.takeScreenshotAsCheckpoint('product_mana_list')
 

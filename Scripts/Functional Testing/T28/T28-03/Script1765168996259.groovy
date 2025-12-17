@@ -22,15 +22,15 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
-
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (78)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (60)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (60)'), 'tzH6RvlfSTg=')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (16)'))av-link (16)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (59)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (16)'))
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_So snh s lng sn phm theo nh cung cp__46b4ec (3)'))
 
@@ -42,7 +42,9 @@ WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Produc
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select__supplierSelect (2)'), 
     '1', true)
 
-WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input__productPrice (2)'), ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Image_btn btn-secondary'))tn-secondary'))
+WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input__productPrice (2)'), '24000000')
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Image_btn btn-secondary'))
 
 WebUI.takeScreenshotAsCheckpoint('T28-03')
 

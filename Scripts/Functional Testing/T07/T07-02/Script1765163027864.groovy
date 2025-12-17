@@ -22,11 +22,13 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (18)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-E10_far fa-cart-plus cart (4)'))lus cart (4)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-E10_far fa-cart-plus cart (4)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/i_Subtotal_fa-regular fa-circle-xmark'))circle-xmark'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-cart (4)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/i_Subtotal_fa-regular fa-circle-xmark'))
 
 WebUI.takeScreenshotAsCheckpoint('T07-02')
 

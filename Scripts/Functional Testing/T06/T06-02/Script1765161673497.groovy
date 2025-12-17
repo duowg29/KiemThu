@@ -22,13 +22,15 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
-WebUI.maximizeWindow()
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (15)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (2)'))s search (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (2)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest - Gears/input_Contact_searchInput (2)'), 'Alpha A7 ')
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass searExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (3)'))uct-list (3)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search_1 (1)'))
+
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (3)'))
 
 WebUI.takeScreenshotAsCheckpoint('T06-02')
 
