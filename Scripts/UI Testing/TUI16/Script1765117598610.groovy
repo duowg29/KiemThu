@@ -22,6 +22,8 @@ WebUI.openBrowser('')
 
 WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
+WebUI.maximizeWindow()
+
 ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (134)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (117)'), 'phu123@')
@@ -38,13 +40,18 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Came
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (6)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'))
+// Scroll to các div elements để chuẩn bị cho screenshot (không cần click)
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'), 10)
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_yourOrder')
 

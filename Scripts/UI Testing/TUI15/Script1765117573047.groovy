@@ -40,13 +40,18 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Came
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (5)'))
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'))
+// Scroll to các input fields để chuẩn bị cho screenshot (không cần click)
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 10)
 
-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'))
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 20)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 10)
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_form')
 
