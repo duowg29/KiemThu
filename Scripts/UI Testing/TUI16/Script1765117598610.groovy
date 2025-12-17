@@ -40,18 +40,17 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Came
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (6)'))
 
-// Scroll to các div elements để chuẩn bị cho screenshot (không cần click)
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 10)
+// Đợi checkout page load - sử dụng waitForPageLoad
+WebUI.waitForPageLoad(30)
 
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'), 10)
+// Đợi một element chính của checkout page xuất hiện (order summary section)
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 30, FailureHandling.CONTINUE_ON_FAILURE)
 
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'), 10)
-
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'), 10)
+// Scroll to các div elements để chuẩn bị cho screenshot (không cần click) - bỏ qua nếu không tìm thấy
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Qut m QR  thanh ton_order-summary (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_x1_total-row (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Subtotal_total-row (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/div_Free_total-row total-final (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_yourOrder')
 

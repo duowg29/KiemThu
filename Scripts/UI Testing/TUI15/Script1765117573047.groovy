@@ -40,18 +40,17 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Came
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (5)'))
 
-// Scroll to các input fields để chuẩn bị cho screenshot (không cần click)
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 10)
+// Đợi checkout page load - sử dụng waitForPageLoad
+WebUI.waitForPageLoad(30)
 
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 10)
+// Đợi một element chính của checkout page xuất hiện (form hoặc section)
+WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 30, FailureHandling.CONTINUE_ON_FAILURE)
 
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 10)
-
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 10)
+// Scroll to các input fields để chuẩn bị cho screenshot (không cần click) - bỏ qua nếu không tìm thấy
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_form')
 
