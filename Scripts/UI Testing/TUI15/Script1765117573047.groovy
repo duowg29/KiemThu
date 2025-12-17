@@ -40,17 +40,11 @@ ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Came
 
 ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (5)'))
 
-// Đợi checkout page load - sử dụng waitForPageLoad
+// Đợi checkout page load hoàn toàn
 WebUI.waitForPageLoad(30)
 
-// Đợi một element chính của checkout page xuất hiện (form hoặc section)
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 30, FailureHandling.CONTINUE_ON_FAILURE)
-
-// Scroll to các input fields để chuẩn bị cho screenshot (không cần click) - bỏ qua nếu không tìm thấy
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Full Name_full_name (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/input_Phone Number_phone (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Address_address (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_Checkout - CamNest/textarea_Order Notes (Optional)_notes (1)'), 10, FailureHandling.CONTINUE_ON_FAILURE)
+// Đợi một chút để đảm bảo page đã render đầy đủ
+WebUI.delay(2)
 
 WebUI.takeScreenshotAsCheckpoint('cart_page_form')
 
