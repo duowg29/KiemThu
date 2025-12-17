@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,13 +24,13 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (16)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (16)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest - Camera/input_Contact_searchInput'), 'Abceas123')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search_1'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search_1'))
 
 WebUI.takeScreenshotAsCheckpoint('T06-03')
 

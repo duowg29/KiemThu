@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,17 +24,13 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (6)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (6)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup'))p_txt-signup'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPassword1'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input__signupPassword2'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_signupPExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__signupPassword2'))nupPassword2'))
 
 WebUI.takeScreenshotAsCheckpoint('popup_signup_input')
 

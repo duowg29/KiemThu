@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,13 +24,9 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (20)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-1_far fa-cart-plus cart'))rt-plus cart'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_My nh k thut s Sony ZV-1_far fa-cart-plus cart'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-cart (6)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (4)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fas fa-shopping-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Apply_normal (4)'))y_normal (4)'))
 
 WebUI.takeScreenshotAsCheckpoint('T09-01')
 

@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,21 +24,21 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (97)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (97)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (80)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (80)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (79)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (79)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (16)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (16)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Tm kim email_search-email (1)'), 'quachnk63@')
 
 WebUI.sendKeys(findTestObject('Object Repository/Page_CamNest/input_Tm kim email_search-email (1)'), Keys.chord(Keys.ENTER))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (2)'))
 
 WebUI.takeScreenshotAsCheckpoint('T42-03')
 

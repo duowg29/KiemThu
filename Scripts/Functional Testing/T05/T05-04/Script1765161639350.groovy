@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,11 +24,11 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (12)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (12)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a_Chn my Manfrotto Pixi Mini_next (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/a_Chn my Manfrotto Pixi Mini_next (1)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a_Flash Canon Speedlite 470EX-AI, Mi 100_prev'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/a_Flash Canon Speedlite 470EX-AI, Mi 100_prev'))
 
 WebUI.takeScreenshotAsCheckpoint('T05-04')
 

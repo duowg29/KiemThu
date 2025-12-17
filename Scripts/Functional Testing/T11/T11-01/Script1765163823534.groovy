@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,9 +24,9 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (40)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (40)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (5)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (5)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup (1)'), 'phu123@')
 
@@ -35,7 +36,7 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Sign
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (1)'), '2JzPR/xYVF0ESRcxiJj1+g==')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input__acceptEULA'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptEULA'))
 
 WebUI.takeScreenshotAsCheckpoint('T11-01')
 

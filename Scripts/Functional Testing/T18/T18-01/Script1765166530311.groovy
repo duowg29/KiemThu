@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,17 +24,17 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (50)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (50)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (32)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (32)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (31)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (31)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a__nav-link (4)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a__nav-link (4)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Management_stat-card (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Account Management - CamNest/div_Account Management_stat-card (1)'))
 
 WebUI.takeScreenshotAsCheckpoint('T18-01')
 

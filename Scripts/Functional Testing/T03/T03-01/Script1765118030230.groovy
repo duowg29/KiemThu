@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -25,20 +26,16 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (7)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNeExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand'))_Brand_brand'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Brand_brand'), 'Canon', true)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest - Camera/select_Price Range_price'), '20m-40m', 
     true)
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_search-btn'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/button_Sort By_seExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list'))product-list'))
 
 WebUI.takeScreenshotAsCheckpoint('T03-01')
 

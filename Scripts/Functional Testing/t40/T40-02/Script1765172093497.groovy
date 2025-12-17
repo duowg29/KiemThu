@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,22 +24,22 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (90)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (90)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (72)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (72)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (71)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_submit (71)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (8)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (8)'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_CamNest/select_Template_template_type (2)'), 'Business_Custom', 
     true)
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Subject_subject (2)'), 'Thông báo cập nhật')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Target_all (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Target_all (2)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/textarea_Content_content (2)'), 'Cập nhật mới')
 

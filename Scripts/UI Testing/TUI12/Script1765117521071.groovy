@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,19 +24,11 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fa-solid fa-magnifying-glass search (3)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/i_Contact_fa-solid fa-magnifying-glass seExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search (1)'))magnifying-glass search (1)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (32)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/a (3)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/i_Contact_fa-solid fa-magnifying-glass search (1)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/a (3)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (3)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/a (3)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Lens/i_Contact_fa-solid fa-magnifying-glass search'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass seExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - GeaExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Lens/i_Contact_fa-solid fa-magnifying-glass search')) fa-magnifying-glass search'))
 
 WebUI.takeScreenshotAsCheckpoint('T12')
 

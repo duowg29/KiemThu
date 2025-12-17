@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,21 +24,17 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (25)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (25)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (16)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (16)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (15)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (2)'))nav-link (2)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Attached File_submit-email'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_Attached File_submit-email'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/div_Submit_emailProgressBar'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a_Successemails_performance-button'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Submit_emailProExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_Successemails_performance-button'))mance-button'))
 
 WebUI.takeScreenshotAsCheckpoint('email_form_button')
 

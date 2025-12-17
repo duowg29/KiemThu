@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,42 +24,12 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-// Đợi page load hoàn toàn
-WebUI.delay(2)
-
-// Đợi element present (tồn tại trong DOM) trước
-WebUI.waitForElementPresent(findTestObject('Object Repository/Page_CamNest/a (5)'), 20)
-
-// Đợi element visible và scroll đến element
-WebUI.waitForElementVisible(findTestObject('Object Repository/Page_CamNest/a (5)'), 20)
-WebUI.scrollToElement(findTestObject('Object Repository/Page_CamNest/a (5)'), 10)
-
-// Thử click bình thường, nếu fail thì dùng JavaScript click
-try {
-	WebUI.click(findTestObject('Object Repository/Page_CamNest/a (5)'))
-} catch (Exception e) {
-	// Fallback: Dùng JavaScript click nếu normal click fail
-	println "Normal click failed, trying JavaScript click..."
-	WebUI.executeJavaScript('arguments[0].click();', [WebUI.findWebElement(findTestObject('Object Repository/Page_CamNest/a (5)'))])
-}
-
-// Đợi và scroll cho các click tiếp theo với JavaScript fallback
-def clickWithFallback = { testObject ->
-	try {
-		WebUI.waitForElementPresent(testObject, 20)
-		WebUI.waitForElementVisible(testObject, 20)
-		WebUI.scrollToElement(testObject, 10)
-		WebUI.click(testObject)
-	} catch (Exception e) {
-		println "Normal click failed for ${testObject.getObjectId()}, trying JavaScript click..."
-		WebUI.executeJavaScript('arguments[0].click();', [WebUI.findWebElement(testObject)])
-	}
-}
-
-clickWithFallback(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'))
-clickWithFallback(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'))
-clickWithFallback(findTestObject('Object Repository/Page_CamNest - Lens/a'))
-clickWithFallback(findTestObject('Object Repository/Page_CamNest/a_1'))
+// Sử dụng safeClick - đã có wait, scroll và fallback JavaScript click built-in
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a (5)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/a (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/a (1)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Lens/a'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_1'))
 
 WebUI.takeScreenshotAsCheckpoint('navbar_page')
 

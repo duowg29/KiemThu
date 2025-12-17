@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,22 +24,18 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (81)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (81)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (63)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (63)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (62)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (19)'))av-link (19)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (19)'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/i_Canon_fas fa-edit'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/i_Canon_fas fa-edit'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select__categorySelect (3)'), 
-    '3', true)
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (2)'))
+   ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (2)'))-primary (2)'))
 
 WebUI.takeScreenshotAsCheckpoint('T30-01')
 

@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,11 +24,9 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (46)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (46)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLabel (11)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup (7)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/label_Or_toggleLaExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input_Sign Up_txt-signup (7)'))t-signup (7)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Sign Up_email (7)'), '25a4041902@hvnh.edu.vn')
 
@@ -35,9 +34,7 @@ WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Sign
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input__signupPassword2 (7)'), '2JzPR/xYVF0ESRcxiJj1+g==')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/input__acceptEULA (6)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (7)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/input__acceptExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_Subscribe for news_signupButton (7)'))upButton (7)'))
 
 WebUI.takeScreenshotAsCheckpoint('T15-01')
 

@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,17 +24,15 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (77)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (77)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (59)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (59)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (58)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (15)'))av-link (15)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Account_nav-link (15)'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_So snh s lng sn phm theo nh cung cp__46b4ec (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_So snh s lng sn phm theo nh cung cp__46b4ec (2)'))
 
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select__categorySelect (1)'), 
     '2', true)
@@ -41,9 +40,7 @@ WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Produc
 WebUI.selectOptionByValue(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/select__supplierSelect (1)'), 
     '2', true)
 
-WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input__productPrice (1)'), '1000000')
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (1)'))
+WebUI.setText(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/input__productPrice (1)'),ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Product Manager - CamNest/button_Cancel_btn btn-primary (1)'))-primary (1)'))
 
 WebUI.takeScreenshotAsCheckpoint('T28-02')
 

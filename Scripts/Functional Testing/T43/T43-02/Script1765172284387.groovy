@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,21 +24,17 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (102)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (102)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (85)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (85)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (84)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (21)'))av-link (21)'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Order_nav-link (21)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_2_page-link (2)'))
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a_2_page-link (2)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a_Khng xut hin li_page-link'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (6)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/a_Khng xut hin li_pExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/div_Thng k Email_emailStatsTable (6)'))atsTable (6)'))
 
 WebUI.takeScreenshotAsCheckpoint('T43-02')
 

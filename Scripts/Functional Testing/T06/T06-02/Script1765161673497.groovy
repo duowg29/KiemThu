@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,15 +24,11 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/a (15)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (2)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNesExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search (2)'))s search (2)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest - Gears/input_Contact_searchInput (2)'), 'Alpha A7 ')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass search_1 (1)'))
-
-WebUI.click(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (3)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Gears/i_Contact_fa-solid fa-magnifying-glass searExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest - Camera/div_Featured Products_product-list (3)'))uct-list (3)'))
 
 WebUI.takeScreenshotAsCheckpoint('T06-02')
 

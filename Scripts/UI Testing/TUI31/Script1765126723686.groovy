@@ -13,6 +13,7 @@ import com.kms.katalon.core.testng.keyword.TestNGBuiltinKeywords as TestNGKW
 import com.kms.katalon.core.testobject.TestObject as TestObject
 import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
+import com.kms.katalon.keyword.WebUIExtendedKeywords as ExtendedKeywords
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
@@ -23,23 +24,15 @@ WebUI.navigateToUrl('http://localhost/CAMNEST/')
 
 WebUI.maximizeWindow()
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (21)'))
+ExtendedKeywords.safeClickLoginIcon(findTestObject('Object Repository/Page_CamNest/i_Contact_fas fa-user (21)'))
 
 WebUI.setText(findTestObject('Object Repository/Page_CamNest/input_Contact_txt (12)'), 'admin')
 
 WebUI.setEncryptedText(findTestObject('Object Repository/Page_CamNest/input_Contact_loginPassword (12)'), 'tzH6RvlfSTg=')
 
-WebUI.click(findTestObject('Object Repository/Page_CamNest/button_submit (11)'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_CamNest/button_subExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0a7e11'))ng thc thanh ton_sea_0a7e11'))
 
-WebUI.click(findTestObject('Object Repository/Page_Dashboard Manager - CamNest Admin/a_Product_nav-link (2)'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/input_Doanh thu theo phng thc thanh ton_sea_0a7e11'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_st_b60020'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_pa_cbadc5'))
-
-WebUI.click(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sortBy'))
+ExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_pExtendedKeywords.safeClick(findTestObject('Object Repository/Page_Advanced Order Management - CamNest/select_Doanh thu theo phng thc thanh ton_sortBy'))o phng thc thanh ton_sortBy'))
 
 WebUI.takeScreenshotAsCheckpoint('order_mana_list')
 
