@@ -101,7 +101,7 @@ jobs:
         
         # Test suite và paths
         # QUAN TRỌNG: Đảm bảo test suite path đúng với tên trong project
-        $testSuitePath = "Test Suites/UI"
+        $testSuitePath = "Test Suites/UI/Shopping Cart Testcases"
         # Đảm bảo project path là absolute path
         $projectPath = (Resolve-Path $PWD).Path -replace '\\', '/'
         $reportFolder = "$PWD\Reports" -replace '\\', '/'
